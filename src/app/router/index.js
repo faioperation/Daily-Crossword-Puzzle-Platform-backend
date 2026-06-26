@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { OtpRouter } from "../modules/otp/otp.route.js";
-import { AuthRouter} from "../modules/auth/auth.route.js";
+import { AuthRouter } from "../modules/auth/auth.route.js";
 
 export const router = Router();
 const moduleRoutes = [

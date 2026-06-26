@@ -25,7 +25,7 @@ app.use("/uploads", express.static("uploads"));
 
 // Health check
 app.get("/", (req, res) => {
-  res.send("Hello, World!");
+  res.send("Daily-Crossword-Puzzle-Platform-Backend");
 });
 
 // 404 handler (must be after routes)
