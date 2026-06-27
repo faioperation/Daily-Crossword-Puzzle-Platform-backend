@@ -6,11 +6,7 @@ import { checkAuthMiddleware } from "../../middleware/checkAuthMiddleware.js";
 
 const router = Router();
 
-router.post(
-  "/signup",
-  validateRequest(AuthValidation.signupSchema),
-  AuthController.signup,
-);
+
 
 router.post(
   "/send-otp",

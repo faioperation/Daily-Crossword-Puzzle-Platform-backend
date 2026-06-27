@@ -7,23 +7,409 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum user_role {
+// ===============================
+// ENUMS
+// ===============================
+
+enum UserRole {
   SYSTEM_OWNER
-  BUSINESS_OWNER
+  USER
 }
 
-model users {
-  id       String @id @default(uuid())
-  email    String @unique
+enum PuzzleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PuzzleDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ClueDirection {
+  ACROSS
+  DOWN
+}
+
+enum WinnerStatus {
+  PENDING
+  ANNOUNCED
+  CLAIMED
+}
+
+// ===============================
+// USER
+// ===============================
+
+model User {
+  id String @id @default(uuid())
+
+  name     String
+  username String? @unique
+  email    String  @unique
   password String
 
-  first_name String
-  last_name  String
-  avatar     String?
-  gender     String?
-  country    String?
-  phone      String?
+  avatar String?
 
-  role        user_role   @default(BUSINESS_OWNER)
-  is_verified Boolean     @default(false)
+  role UserRole @default(USER)
+
+  isActive   Boolean @default(true)
+  isVerified Boolean @default(false)
+
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  createdPuzzles Puzzle[]        @relation("PuzzleCreatedBy")
+  attempts       PuzzleAttempt[]
+  winners        PuzzleWinner[]
+  statistic      UserStatistic?
+
+  testerDevices  TesterDevice[]  @relation("TesterCreatedBy")
+  blockedDevices BlockedDevice[] @relation("BlockedBy")
+
+  announcements Announcement[]
+
+  @@map("users")
+}
+
+// ===============================
+// PUZZLE
+// ===============================
+
+model Puzzle {
+  id String @id @default(uuid())
+
+  title       String
+  description String?
+
+  rows    Int
+  columns Int
+
+  rules String?
+
+  difficulty PuzzleDifficulty
+
+  status PuzzleStatus @default(DRAFT)
+
+  publishDate DateTime?
+
+  winnerSelected   Boolean   @default(false)
+  winnerSelectedAt DateTime?
+
+  createdById String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  createdBy User @relation("PuzzleCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+
+  cells    PuzzleCell[]
+  clues    PuzzleClue[]
+  attempts PuzzleAttempt[]
+  winners  PuzzleWinner[]
+
+  @@index([status])
+  @@index([publishDate])
+  @@index([difficulty])
+  @@map("puzzles")
+}
+
+// ===============================
+// PUZZLE CELL
+// ===============================
+
+model PuzzleCell {
+  id String @id @default(uuid())
+
+  puzzleId String
+
+  row    Int
+  column Int
+
+  number Int?
+
+  isBlack Boolean @default(false)
+
+  letter String?
+
+  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([puzzleId, row, column])
+  @@index([puzzleId])
+  @@map("puzzle_cells")
+}
+
+// ===============================
+// PUZZLE CLUE
+// ===============================
+
+model PuzzleClue {
+  id String @id @default(uuid())
+
+  puzzleId String
+
+  number Int
+
+  direction ClueDirection
+
+  question String
+
+  answer String
+
+  startRow Int
+
+  startColumn Int
+
+  length Int
+
+  createdAt DateTime @default(now())
+
+  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  @@unique([puzzleId, number, direction])
+  @@index([puzzleId])
+  @@index([direction])
+  @@map("puzzle_clues")
+}
+
+// ===============================
+// PUZZLE ATTEMPT
+// ===============================
+
+model PuzzleAttempt {
+  id String @id @default(uuid())
+
+  puzzleId String
+  userId   String?
+
+  // Device Information
+  deviceId    String
+  fingerprint String?
+
+  ipAddress String?
+  userAgent String?
+
+  browser String?
+  os      String?
+
+  playDate DateTime
+
+  isTester Boolean @default(false)
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  durationSeconds Int?
+
+  completed Boolean @default(false)
+
+  score Int @default(0)
+
+  wrongAttempts Int @default(0)
+
+  hintsUsed Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  answers PuzzleAnswer[]
+
+  winner PuzzleWinner?
+
+  @@index([puzzleId])
+  @@index([userId])
+  @@index([playDate])
+  @@index([deviceId])
+  @@index([fingerprint])
+  @@index([completed])
+  @@index([isTester])
+  @@map("puzzle_attempts")
+}
+
+// ===============================
+// PUZZLE ANSWERS
+// ===============================
+
+model PuzzleAnswer {
+  id String @id @default(uuid())
+
+  attemptId String
+
+  row Int
+
+  column Int
+
+  enteredLetter String?
+
+  isCorrect Boolean @default(false)
+
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  attempt PuzzleAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, row, column])
+  @@index([attemptId])
+  @@map("puzzle_answers")
+}
+
+// ===============================
+// DAILY WINNER
+// ===============================
+
+model PuzzleWinner {
+  id String @id @default(uuid())
+
+  puzzleId String
+
+  userId String
+
+  attemptId String @unique
+
+  status WinnerStatus @default(PENDING)
+
+  reward String?
+
+  announcedAt DateTime?
+
+  claimedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  attempt PuzzleAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@unique([puzzleId, userId])
+  @@index([status])
+  @@map("puzzle_winners")
+}
+
+// ===============================
+// USER STATISTICS
+// ===============================
+
+model UserStatistic {
+  id String @id @default(uuid())
+
+  userId String @unique
+
+  totalPlayed Int @default(0)
+
+  totalCompleted Int @default(0)
+
+  totalWins Int @default(0)
+
+  currentStreak Int @default(0)
+
+  longestStreak Int @default(0)
+
+  fastestTime Int?
+
+  averageTime Float?
+
+  totalWrongAttempts Int @default(0)
+
+  totalHintsUsed Int @default(0)
+
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_statistics")
+}
+
+// ===============================
+// TESTER DEVICES
+// ===============================
+
+model TesterDevice {
+  id String @id @default(uuid())
+
+  deviceId    String  @unique
+  fingerprint String? @unique
+
+  note String?
+
+  isActive Boolean @default(true)
+
+  createdById String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  createdBy User @relation("TesterCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([isActive])
+  @@map("tester_devices")
+}
+
+// ===============================
+// BLOCKED DEVICES
+// ===============================
+
+model BlockedDevice {
+  id String @id @default(uuid())
+
+  deviceId    String?
+  fingerprint String?
+
+  ipAddress String?
+
+  reason String?
+
+  blockedById String
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  blockedBy User @relation("BlockedBy", fields: [blockedById], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
+  @@index([fingerprint])
+  @@index([ipAddress])
+  @@map("blocked_devices")
+}
+
+// ===============================
+// ANNOUNCEMENTS
+// ===============================
+
+model Announcement {
+  id String @id @default(uuid())
+
+  title String
+
+  description String
+
+  isActive Boolean @default(true)
+
+  createdById String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([isActive])
+  @@map("announcements")
 }

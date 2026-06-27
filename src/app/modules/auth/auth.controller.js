@@ -18,33 +18,7 @@ const handleError = (res, error) => {
   });
 };
 
-const signup = async (req, res) => {
-  try {
-    const { user } = await AuthService.signup(prisma, req.body);
 
-    // Automatically send OTP after signup
-    await OtpService.sendOtp(
-      prisma,
-      user.email,
-      `${user.first_name} ${user.last_name}`,
-    );
-
-    return res.status(StatusCodes.CREATED).json({
-      success: true,
-      message: "User registered successfully.",
-      data: {
-        user: {
-          id: user.id,
-          email: user.email,
-          first_name: user.first_name,
-          last_name: user.last_name,
-        },
-      },
-    });
-  } catch (error) {
-    return handleError(res, error);
-  }
-};
 
 const sendOtp = async (req, res) => {
   try {
@@ -198,7 +172,6 @@ const changePassword = async (req, res) => {
 };
 
 export const AuthController = {
-  signup,
   sendOtp,
   verifyOtp,
   login,
