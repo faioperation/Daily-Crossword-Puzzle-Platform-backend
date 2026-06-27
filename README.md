@@ -1,6 +1,6 @@
 # Must Push in Development Branch From your workable branch. Then If everything okey, then marge into main branch. 
 
-# 🧩 Daily Crossword Puzzle Platform API
+# 🧩 Daily Crossword Puzzle Platform API 
 
 A scalable REST API built with **Node.js**, **Express.js**, **TypeScript**, **Prisma**, **PostgreSQL**, and **Zod** for a Daily Crossword Puzzle Platform.
 
