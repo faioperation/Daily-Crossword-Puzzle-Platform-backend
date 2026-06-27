@@ -1,26 +1,6 @@
 import { z } from "zod";
 
-const signupSchema = z.object({
-  body: z
-    .object({
-      first_name: z.string({ required_error: "First name is required" }),
-      last_name: z.string({ required_error: "Last name is required" }),
-      business_name: z.string({ required_error: "Business name is required" }),
-      email: z
-        .string({ required_error: "Email is required" })
-        .email("Invalid email address"),
-      password: z
-        .string({ required_error: "Password is required" })
-        .min(6, "Password must be at least 6 characters"),
-      confirm_password: z.string({
-        required_error: "Confirm password is required",
-      }),
-    })
-    .refine((data) => data.password === data.confirm_password, {
-      message: "Passwords do not match",
-      path: ["confirm_password"],
-    }),
-});
+
 
 const sendOtpSchema = z.object({
   body: z.object({
@@ -101,7 +81,6 @@ const changePasswordSchema = z.object({
 });
 
 export const AuthValidation = {
-  signupSchema,
   sendOtpSchema,
   verifyOtpSchema,
   loginSchema,
