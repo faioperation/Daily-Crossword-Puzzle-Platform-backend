@@ -21,7 +21,7 @@ export const checkAuthMiddleware =
       const decoded = jwt.verify(jwtToken, envVars.JWT_SECRET_TOKEN);
 
       // Determine which table to search based on the role or route
-      const user = await prisma.users.findUnique({
+      const user = await prisma.user.findUnique({
         where: { id: decoded.id },
       });
 
@@ -29,6 +29,13 @@ export const checkAuthMiddleware =
         return res.status(401).json({
           success: false,
           message: "User not found",
+        });
+      }
+
+      if (!user.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: "Your account is not active",
         });
       }
 
@@ -41,7 +48,7 @@ export const checkAuthMiddleware =
 
       const isResetRoute = req.originalUrl.includes("/reset-password");
 
-      if (!user.is_verified && !isResetRoute) {
+      if (!user.isVerified && !isResetRoute) {
         return res.status(403).json({
           success: false,
           message: "User is not verified. Please verify your email.",

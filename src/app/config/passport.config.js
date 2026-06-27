@@ -12,12 +12,18 @@ passport.use(
     },
     async (email, password, done) => {
       try {
-        const user = await prisma.users.findUnique({
+        const user = await prisma.user.findUnique({
           where: { email },
         });
 
         if (!user) {
           return done(null, false, { message: "Incorrect email." });
+        }
+
+        if (!user.isActive) {
+          return done(null, false, {
+            message: "Your account is not active.",
+          });
         }
 
         if (!user.password) {
@@ -32,7 +38,7 @@ passport.use(
           return done(null, false, { message: "Incorrect password." });
         }
 
-        if (!user.is_verified) {
+        if (!user.isVerified) {
           return done(null, false, {
             message: "User is not verified. Please verify your email.",
           });
@@ -54,7 +60,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await prisma.users.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({ where: { id } });
     done(null, user);
   } catch (err) {
     done(err, null);

@@ -1,6 +1,5 @@
 export const Role = {
   SYSTEM_OWNER: "SYSTEM_OWNER",
-  BUSINESS_OWNER: "BUSINESS_OWNER",
-  STAFF: "STAFF",
-  CUSTOMER: "CUSTOMER",
+  USER: "USER",
 };
+

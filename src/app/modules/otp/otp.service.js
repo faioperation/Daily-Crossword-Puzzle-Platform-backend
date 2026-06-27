@@ -15,13 +15,12 @@ const generateOtp = (length = 6) =>
 export const OtpService = {
   // ✅ Send OTP
   sendOtp: async (prisma, email, name) => {
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
       select: {
         id: true,
-        is_verified: true,
-        first_name: true,
-        last_name: true,
+        isVerified: true,
+        name: true,
       },
     });
 
@@ -29,7 +28,7 @@ export const OtpService = {
       throw new DevBuildError("User not found", 404);
     }
 
-    if (user.is_verified) {
+    if (user.isVerified) {
       throw new DevBuildError("You are already verified", 401);
     }
 
@@ -45,7 +44,7 @@ export const OtpService = {
       subject: "Verification OTP",
       templateName: "otp",
       templateData: {
-        name: name || `${user.first_name} ${user.last_name}`,
+        name: name || user.name,
         otp,
       },
     });
@@ -53,11 +52,11 @@ export const OtpService = {
 
   // ✅ Verify OTP
   verifyOtp: async (prisma, email, otp) => {
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
       select: {
         id: true,
-        is_verified: true,
+        isVerified: true,
       },
     });
 
@@ -65,7 +64,7 @@ export const OtpService = {
       throw new DevBuildError("User not found", 404);
     }
 
-    if (user.is_verified) {
+    if (user.isVerified) {
       throw new DevBuildError("You are already verified", 401);
     }
 
@@ -80,16 +79,16 @@ export const OtpService = {
       throw new DevBuildError("Invalid OTP", 401);
     }
 
-    await prisma.users.update({
+    await prisma.user.update({
       where: { email },
-      data: { is_verified: true },
+      data: { isVerified: true },
     });
     await redisClient.del(redisKey);
   },
 
   // ✅ Send Forgot Password OTP
   sendForgotPasswordOtp: async (prisma, email) => {
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
     });
 
@@ -97,7 +96,7 @@ export const OtpService = {
       throw new DevBuildError("User not found", 404);
     }
 
-    if (!user.is_verified) {
+    if (!user.isVerified) {
       throw new DevBuildError("User is not verified", 401);
     }
 
@@ -113,7 +112,7 @@ export const OtpService = {
       subject: "Forgot Password OTP",
       templateName: "forgotPassword",
       templateData: {
-        name: `${user.first_name} ${user.last_name}`,
+        name: user.name,
         otp,
       },
     });
@@ -129,7 +128,7 @@ export const OtpService = {
     }
 
     // OTP is valid, generate a short-lived reset token
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
       select: { id: true, email: true, role: true },
     });
