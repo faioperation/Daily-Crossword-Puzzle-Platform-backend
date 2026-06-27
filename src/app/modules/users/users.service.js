@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import bcrypt from "bcrypt";
 import DevBuildError from "../../lib/DevBuildError.js";
+import { QueryBuilder } from "../../utils/QueryBuilder.js";
 
 const signup = async (prisma, payload) => {
   const { name, username, email, password, role } = payload;
@@ -130,9 +131,76 @@ const deleteUser = async (prisma, userId) => {
   return { id: userId };
 };
 
+const updateUserStatus = async (prisma, userId, isActive) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new DevBuildError("User not found", StatusCodes.NOT_FOUND);
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      isActive,
+    },
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      email: true,
+      role: true,
+      isActive: true,
+      isVerified: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return updatedUser;
+};
+
+const getAllUsers = async (prisma, query) => {
+  const queryBuilder = new QueryBuilder(query)
+    .search(["name", "email", "username"])
+    .filter()
+    .sort()
+    .fields()
+    .paginate();
+
+  const builtQuery = queryBuilder.build();
+  
+  if (!builtQuery.select) {
+    builtQuery.select = {
+      id: true,
+      name: true,
+      username: true,
+      email: true,
+      avatar: true,
+      role: true,
+      isActive: true,
+      isVerified: true,
+      createdAt: true,
+      updatedAt: true,
+    };
+  }
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany(builtQuery),
+    prisma.user.count({ where: builtQuery.where }),
+  ]);
+
+  const meta = queryBuilder.getMeta(total);
+
+  return { meta, data: users };
+};
+
 export const UsersService = {
   signup,
   getProfile,
   updateProfile,
   deleteUser,
+  updateUserStatus,
+  getAllUsers,
 };

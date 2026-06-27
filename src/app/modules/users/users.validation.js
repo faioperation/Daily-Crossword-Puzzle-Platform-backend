@@ -37,7 +37,14 @@ const updateProfileSchema = z.object({
   }),
 });
 
+const updateStatusSchema = z.object({
+  body: z.object({
+    isActive: z.boolean({ required_error: "isActive status is required" }),
+  }),
+});
+
 export const UsersValidation = {
   signupSchema,
   updateProfileSchema,
+  updateStatusSchema,
 };

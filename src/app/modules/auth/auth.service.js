@@ -9,53 +9,11 @@ import jwt from "jsonwebtoken";
 const RESET_TOKEN_KEY_PREFIX = "reset-token";
 const RESET_TOKEN_EXPIRATION = 10 * 60; // 10 minutes
 
-const signup = async (prisma, payload) => {
-  const { first_name, last_name, email, password, business_name } = payload;
-
-  const existingUser = await prisma.users.findUnique({
-    where: { email },
-  });
-
-  if (existingUser) {
-    throw new DevBuildError(
-      "User already exists with this email",
-      StatusCodes.CONFLICT,
-    );
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 12);
-
-  const result = await prisma.$transaction(async (tx) => {
-    const user = await tx.users.create({
-      data: {
-        first_name,
-        last_name,
-        email,
-        password: hashedPassword,
-        role: "RESTAURANT_OWNER",
-        status: "active",
-        is_verified: false,
-      },
-    });
-
-    const restaurant = await tx.restaurants.create({
-      data: {
-        name: business_name,
-        owner_id: user.id,
-        status: "active",
-      },
-    });
-
-    return { user, restaurant };
-  });
-
-  return result;
-};
 
 const login = async (prisma, payload) => {
   const { email, password } = payload;
 
-  const user = await prisma.users.findUnique({
+  const user = await prisma.user.findUnique({
     where: { email },
   });
 
@@ -63,16 +21,16 @@ const login = async (prisma, payload) => {
     throw new DevBuildError("User does not exist", StatusCodes.NOT_FOUND);
   }
 
-  if (user.role === "RESTAURANT_OWNER" && !user.is_verified) {
+  if (!user.isActive) {
     throw new DevBuildError(
-      "Please verify your account first",
+      "Your account is not active",
       StatusCodes.FORBIDDEN,
     );
   }
 
-  if (user.status !== "active") {
+  if (!user.isVerified) {
     throw new DevBuildError(
-      "Your account is not active",
+      "Please verify your account first",
       StatusCodes.FORBIDDEN,
     );
   }
@@ -90,8 +48,8 @@ const login = async (prisma, payload) => {
       id: user.id,
       email: user.email,
       role: user.role,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      name: user.name,
+      username: user.username,
       avatar: user.avatar,
     },
     ...tokens,
@@ -119,14 +77,14 @@ const refreshAccessToken = async (prisma, token) => {
     );
   }
 
-  const user = await prisma.users.findUnique({
+  const user = await prisma.user.findUnique({
     where: { id: decoded.id },
     select: {
       id: true,
       email: true,
       role: true,
-      is_verified: true,
-      status: true,
+      isVerified: true,
+      isActive: true,
     },
   });
 
@@ -134,7 +92,7 @@ const refreshAccessToken = async (prisma, token) => {
     throw new DevBuildError("User does not exist", StatusCodes.NOT_FOUND);
   }
 
-  if (user.status !== "active") {
+  if (!user.isActive) {
     throw new DevBuildError(
       "Your account is not active",
       StatusCodes.FORBIDDEN,
@@ -152,7 +110,7 @@ const refreshAccessToken = async (prisma, token) => {
 };
 
 const sendForgotPasswordOtp = async (prisma, email) => {
-  const user = await prisma.users.findUnique({
+  const user = await prisma.user.findUnique({
     where: { email },
   });
 
@@ -197,7 +155,7 @@ const resetPassword = async (prisma, userId, resetToken, newPassword) => {
     throw new DevBuildError("Invalid reset token", StatusCodes.UNAUTHORIZED);
   }
 
-  const user = await prisma.users.findUnique({
+  const user = await prisma.user.findUnique({
     where: { id: userId },
   });
 
@@ -207,7 +165,7 @@ const resetPassword = async (prisma, userId, resetToken, newPassword) => {
 
   const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-  await prisma.users.update({
+  await prisma.user.update({
     where: { id: userId },
     data: { password: hashedPassword },
   });
@@ -217,7 +175,7 @@ const resetPassword = async (prisma, userId, resetToken, newPassword) => {
 };
 
 const changePassword = async (prisma, userId, currentPassword, newPassword) => {
-  const user = await prisma.users.findUnique({
+  const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { id: true, role: true, password: true },
   });
@@ -236,14 +194,13 @@ const changePassword = async (prisma, userId, currentPassword, newPassword) => {
 
   const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-  await prisma.users.update({
+  await prisma.user.update({
     where: { id: userId },
     data: { password: hashedPassword },
   });
 };
 
 export const AuthService = {
-  signup,
   login,
   refreshAccessToken,
   sendForgotPasswordOtp,

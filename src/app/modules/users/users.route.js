@@ -32,4 +32,17 @@ router.delete(
   UsersController.deleteUser,
 );
 
+router.patch(
+  "/:id/status",
+  checkAuthMiddleware(Role.SYSTEM_OWNER),
+  validateRequest(UsersValidation.updateStatusSchema),
+  UsersController.updateUserStatus,
+);
+
+router.get(
+  "/",
+  checkAuthMiddleware(Role.SYSTEM_OWNER),
+  UsersController.getAllUsers,
+);
+
 export const UsersRouter = router;

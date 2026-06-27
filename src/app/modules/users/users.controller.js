@@ -95,9 +95,41 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const updateUserStatus = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const { isActive } = req.body;
+
+    const updated = await UsersService.updateUserStatus(prisma, targetUserId, isActive);
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "User status updated successfully",
+      data: updated,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+const getAllUsers = async (req, res) => {
+  try {
+    const result = await UsersService.getAllUsers(prisma, req.query);
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Users retrieved successfully",
+      meta: result.meta,
+      data: result.data,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 export const UsersController = {
   signup,
   getProfile,
   updateProfile,
   deleteUser,
+  updateUserStatus,
+  getAllUsers,
 };
