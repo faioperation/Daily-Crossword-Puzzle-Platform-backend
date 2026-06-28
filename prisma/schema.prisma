@@ -65,14 +65,14 @@ model User {
 
   // Relations
   createdPuzzles Puzzle[]        @relation("PuzzleCreatedBy")
-  attempts       PuzzleAttempt[]
-  winners        PuzzleWinner[]
-  statistic      UserStatistic?
+  // attempts       PuzzleAttempt[]
+  // winners        PuzzleWinner[]
+  // statistic      UserStatistic?
 
-  testerDevices  TesterDevice[]  @relation("TesterCreatedBy")
-  blockedDevices BlockedDevice[] @relation("BlockedBy")
+  // testerDevices  TesterDevice[]  @relation("TesterCreatedBy")
+  // blockedDevices BlockedDevice[] @relation("BlockedBy")
 
-  announcements Announcement[]
+  // announcements Announcement[]
 
   @@map("users")
 }
@@ -98,6 +98,8 @@ model Puzzle {
 
   publishDate DateTime?
 
+  dailyPrize String?
+
   winnerSelected   Boolean   @default(false)
   winnerSelectedAt DateTime?
 
@@ -107,12 +109,8 @@ model Puzzle {
   updatedAt DateTime @updatedAt
 
   // Relations
-  createdBy User @relation("PuzzleCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
-
-  cells    PuzzleCell[]
-  clues    PuzzleClue[]
-  attempts PuzzleAttempt[]
-  winners  PuzzleWinner[]
+  createdBy User        @relation("PuzzleCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  cells     PuzzleCell[]
 
   @@index([status])
   @@index([publishDate])
@@ -128,288 +126,287 @@ model PuzzleCell {
   id String @id @default(uuid())
 
   puzzleId String
+  puzzle   Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
 
   row    Int
   column Int
 
-  number Int?
-
+  letter  String?
   isBlack Boolean @default(false)
 
-  letter String?
-
-  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+  number Int?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([puzzleId, row, column])
   @@index([puzzleId])
   @@map("puzzle_cells")
 }
 
-// ===============================
-// PUZZLE CLUE
-// ===============================
+// // ===============================
+// // PUZZLE CLUE
+// // ===============================
 
-model PuzzleClue {
-  id String @id @default(uuid())
+// model PuzzleClue {
+//   id String @id @default(uuid())
 
-  puzzleId String
+//   puzzleId String
 
-  number Int
+//   number Int
 
-  direction ClueDirection
+//   direction ClueDirection
 
-  question String
+//   question String
 
-  answer String
+//   answer String
 
-  startRow Int
+//   startRow Int
 
-  startColumn Int
+//   startColumn Int
 
-  length Int
+//   length Int
 
-  createdAt DateTime @default(now())
+//   createdAt DateTime @default(now())
 
-  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+//   puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
 
-  @@unique([puzzleId, number, direction])
-  @@index([puzzleId])
-  @@index([direction])
-  @@map("puzzle_clues")
-}
+//   @@unique([puzzleId, number, direction])
+//   @@index([puzzleId])
+//   @@index([direction])
+//   @@map("puzzle_clues")
+// }
 
-// ===============================
-// PUZZLE ATTEMPT
-// ===============================
+// // ===============================
+// // PUZZLE ATTEMPT
+// // ===============================
 
-model PuzzleAttempt {
-  id String @id @default(uuid())
+// model PuzzleAttempt {
+//   id String @id @default(uuid())
 
-  puzzleId String
-  userId   String?
+//   puzzleId String
+//   userId   String?
 
-  // Device Information
-  deviceId    String
-  fingerprint String?
+//   // Device Information
+//   deviceId    String
+//   fingerprint String?
 
-  ipAddress String?
-  userAgent String?
+//   ipAddress String?
+//   userAgent String?
 
-  browser String?
-  os      String?
+//   browser String?
+//   os      String?
 
-  playDate DateTime
+//   playDate DateTime
 
-  isTester Boolean @default(false)
+//   isTester Boolean @default(false)
 
-  startedAt   DateTime  @default(now())
-  completedAt DateTime?
+//   startedAt   DateTime  @default(now())
+//   completedAt DateTime?
 
-  durationSeconds Int?
+//   durationSeconds Int?
 
-  completed Boolean @default(false)
+//   completed Boolean @default(false)
 
-  score Int @default(0)
+//   score Int @default(0)
 
-  wrongAttempts Int @default(0)
+//   wrongAttempts Int @default(0)
 
-  hintsUsed Int @default(0)
+//   hintsUsed Int @default(0)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  // Relations
-  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+//   // Relations
+//   puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
 
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+//   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  answers PuzzleAnswer[]
+//   answers PuzzleAnswer[]
 
-  winner PuzzleWinner?
+//   winner PuzzleWinner?
 
-  @@index([puzzleId])
-  @@index([userId])
-  @@index([playDate])
-  @@index([deviceId])
-  @@index([fingerprint])
-  @@index([completed])
-  @@index([isTester])
-  @@map("puzzle_attempts")
-}
+//   @@index([puzzleId])
+//   @@index([userId])
+//   @@index([playDate])
+//   @@index([deviceId])
+//   @@index([fingerprint])
+//   @@index([completed])
+//   @@index([isTester])
+//   @@map("puzzle_attempts")
+// }
 
-// ===============================
-// PUZZLE ANSWERS
-// ===============================
+// // ===============================
+// // PUZZLE ANSWERS
+// // ===============================
 
-model PuzzleAnswer {
-  id String @id @default(uuid())
+// model PuzzleAnswer {
+//   id String @id @default(uuid())
 
-  attemptId String
+//   attemptId String
 
-  row Int
+//   row Int
 
-  column Int
+//   column Int
 
-  enteredLetter String?
+//   enteredLetter String?
 
-  isCorrect Boolean @default(false)
+//   isCorrect Boolean @default(false)
 
-  updatedAt DateTime @updatedAt
+//   updatedAt DateTime @updatedAt
 
-  // Relations
-  attempt PuzzleAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+//   // Relations
+//   attempt PuzzleAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
 
-  @@unique([attemptId, row, column])
-  @@index([attemptId])
-  @@map("puzzle_answers")
-}
+//   @@unique([attemptId, row, column])
+//   @@index([attemptId])
+//   @@map("puzzle_answers")
+// }
 
-// ===============================
-// DAILY WINNER
-// ===============================
+// // ===============================
+// // DAILY WINNER
+// // ===============================
 
-model PuzzleWinner {
-  id String @id @default(uuid())
+// model PuzzleWinner {
+//   id String @id @default(uuid())
 
-  puzzleId String
+//   puzzleId String
 
-  userId String
+//   userId String
 
-  attemptId String @unique
+//   attemptId String @unique
 
-  status WinnerStatus @default(PENDING)
+//   status WinnerStatus @default(PENDING)
 
-  reward String?
+//   reward String?
 
-  announcedAt DateTime?
+//   announcedAt DateTime?
 
-  claimedAt DateTime?
+//   claimedAt DateTime?
 
-  createdAt DateTime @default(now())
+//   createdAt DateTime @default(now())
 
-  // Relations
-  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+//   // Relations
+//   puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  attempt PuzzleAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+//   attempt PuzzleAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
 
-  @@unique([puzzleId, userId])
-  @@index([status])
-  @@map("puzzle_winners")
-}
+//   @@unique([puzzleId, userId])
+//   @@index([status])
+//   @@map("puzzle_winners")
+// }
 
-// ===============================
-// USER STATISTICS
-// ===============================
+// // ===============================
+// // USER STATISTICS
+// // ===============================
 
-model UserStatistic {
-  id String @id @default(uuid())
+// model UserStatistic {
+//   id String @id @default(uuid())
 
-  userId String @unique
+//   userId String @unique
 
-  totalPlayed Int @default(0)
+//   totalPlayed Int @default(0)
 
-  totalCompleted Int @default(0)
+//   totalCompleted Int @default(0)
 
-  totalWins Int @default(0)
+//   totalWins Int @default(0)
 
-  currentStreak Int @default(0)
+//   currentStreak Int @default(0)
 
-  longestStreak Int @default(0)
+//   longestStreak Int @default(0)
 
-  fastestTime Int?
+//   fastestTime Int?
 
-  averageTime Float?
+//   averageTime Float?
 
-  totalWrongAttempts Int @default(0)
+//   totalWrongAttempts Int @default(0)
 
-  totalHintsUsed Int @default(0)
+//   totalHintsUsed Int @default(0)
 
-  updatedAt DateTime @updatedAt
+//   updatedAt DateTime @updatedAt
 
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   // Relations
+//   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("user_statistics")
-}
+//   @@map("user_statistics")
+// }
 
-// ===============================
-// TESTER DEVICES
-// ===============================
+// // ===============================
+// // TESTER DEVICES
+// // ===============================
 
-model TesterDevice {
-  id String @id @default(uuid())
+// model TesterDevice {
+//   id String @id @default(uuid())
 
-  deviceId    String  @unique
-  fingerprint String? @unique
+//   deviceId    String  @unique
+//   fingerprint String? @unique
 
-  note String?
+//   note String?
 
-  isActive Boolean @default(true)
+//   isActive Boolean @default(true)
 
-  createdById String
+//   createdById String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  // Relations
-  createdBy User @relation("TesterCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+//   // Relations
+//   createdBy User @relation("TesterCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
 
-  @@index([isActive])
-  @@map("tester_devices")
-}
+//   @@index([isActive])
+//   @@map("tester_devices")
+// }
 
-// ===============================
-// BLOCKED DEVICES
-// ===============================
+// // ===============================
+// // BLOCKED DEVICES
+// // ===============================
 
-model BlockedDevice {
-  id String @id @default(uuid())
+// model BlockedDevice {
+//   id String @id @default(uuid())
 
-  deviceId    String?
-  fingerprint String?
+//   deviceId    String?
+//   fingerprint String?
 
-  ipAddress String?
+//   ipAddress String?
 
-  reason String?
+//   reason String?
 
-  blockedById String
+//   blockedById String
 
-  createdAt DateTime @default(now())
+//   createdAt DateTime @default(now())
 
-  // Relations
-  blockedBy User @relation("BlockedBy", fields: [blockedById], references: [id], onDelete: Cascade)
+//   // Relations
+//   blockedBy User @relation("BlockedBy", fields: [blockedById], references: [id], onDelete: Cascade)
 
-  @@index([deviceId])
-  @@index([fingerprint])
-  @@index([ipAddress])
-  @@map("blocked_devices")
-}
+//   @@index([deviceId])
+//   @@index([fingerprint])
+//   @@index([ipAddress])
+//   @@map("blocked_devices")
+// }
 
-// ===============================
-// ANNOUNCEMENTS
-// ===============================
+// // ===============================
+// // ANNOUNCEMENTS
+// // ===============================
 
-model Announcement {
-  id String @id @default(uuid())
+// model Announcement {
+//   id String @id @default(uuid())
 
-  title String
+//   title String
 
-  description String
+//   description String
 
-  isActive Boolean @default(true)
+//   isActive Boolean @default(true)
 
-  createdById String
+//   createdById String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  // Relations
-  createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
+//   // Relations
+//   createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
-  @@index([isActive])
-  @@map("announcements")
-}
+//   @@index([isActive])
+//   @@map("announcements")
+// }
