@@ -4,9 +4,9 @@ import validateRequest from "../../middleware/validateRequest.js";
 import { AuthValidation } from "./auth.validation.js";
 import { checkAuthMiddleware } from "../../middleware/checkAuthMiddleware.js";
 
+import { Role } from "../../utils/role.js";
+
 const router = Router();
-
-
 
 router.post(
   "/send-otp",
@@ -55,7 +55,7 @@ router.post(
 
 router.patch(
   "/change-password",
-  checkAuthMiddleware(), // Allowing all authenticated users to change password
+  checkAuthMiddleware(Role.SYSTEM_OWNER, Role.USER),
   validateRequest(AuthValidation.changePasswordSchema),
   AuthController.changePassword,
 );

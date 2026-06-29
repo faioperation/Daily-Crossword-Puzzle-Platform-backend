@@ -57,3 +57,10 @@ export const createMulterUpload = ({
     fileFilter: fileFilter,
   });
 };
+
+export const uploadSettingsLogo = createMulterUpload({
+  folder: "settings",
+  allowedTypes: /jpeg|jpg|png|webp|svg/,
+  maxSize: 2 * 1024 * 1024,
+});
+

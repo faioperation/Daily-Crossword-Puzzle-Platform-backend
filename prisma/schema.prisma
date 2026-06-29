@@ -410,3 +410,19 @@ model PuzzleCell {
 //   @@index([isActive])
 //   @@map("announcements")
 // }
+
+// ===============================
+// SETTINGS
+// ===============================
+
+model Setting {
+  id           String   @id @default(uuid())
+  websiteName  String   @default("Daily Crossword Platform")
+  logo         String?
+  supportEmail String   @default("support@crossword.com")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("settings")
+}
+
