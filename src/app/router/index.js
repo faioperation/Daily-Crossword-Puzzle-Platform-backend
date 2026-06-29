@@ -5,6 +5,7 @@ import { UsersRouter } from "../modules/users/users.route.js";
 import { PuzzleCreateRouter } from "../modules/systemOwner/puzzleCreate/puzzleCreate.route.js";
 import { PuzzleCellRouter } from "../modules/systemOwner/puzzleChell/puzzleChell.route.js";
 import { SettingsRouter } from "../modules/systemOwner/settings/settings.route.js";
+import { PrizeManagementRouter } from "../modules/systemOwner/prizeManagement/prizeManagement.route.js";
 
 export const router = Router();
 const moduleRoutes = [
@@ -31,6 +32,10 @@ const moduleRoutes = [
   {
     path: "/system-owner/settings",
     route: SettingsRouter,
+  },
+  {
+    path: "/system-owner/prize-management",
+    route: PrizeManagementRouter,
   },
 ];
 

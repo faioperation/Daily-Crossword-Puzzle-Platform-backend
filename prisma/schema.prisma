@@ -39,6 +39,12 @@ enum WinnerStatus {
   CLAIMED
 }
 
+enum PrizeStatus {
+  EMAIL_SENT
+  ADDRESS_RECEIVED
+  PRIZE_SHIPPED
+}
+
 // ===============================
 // USER
 // ===============================
@@ -65,8 +71,8 @@ model User {
 
   // Relations
   createdPuzzles Puzzle[]        @relation("PuzzleCreatedBy")
-  // attempts       PuzzleAttempt[]
-  // winners        PuzzleWinner[]
+  attempts       PuzzleAttempt[]
+  winners        PuzzleWinner[]
   // statistic      UserStatistic?
 
   // testerDevices  TesterDevice[]  @relation("TesterCreatedBy")
@@ -111,6 +117,8 @@ model Puzzle {
   // Relations
   createdBy User        @relation("PuzzleCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
   cells     PuzzleCell[]
+  attempts  PuzzleAttempt[]
+  winners   PuzzleWinner[]
 
   @@index([status])
   @@index([publishDate])
@@ -177,126 +185,126 @@ model PuzzleCell {
 //   @@map("puzzle_clues")
 // }
 
-// // ===============================
-// // PUZZLE ATTEMPT
-// // ===============================
+// ===============================
+// PUZZLE ATTEMPT
+// ===============================
 
-// model PuzzleAttempt {
-//   id String @id @default(uuid())
+model PuzzleAttempt {
+  id String @id @default(uuid())
 
-//   puzzleId String
-//   userId   String?
+  puzzleId String
+  userId   String?
 
-//   // Device Information
-//   deviceId    String
-//   fingerprint String?
+  // Device Information
+  deviceId    String
+  fingerprint String?
 
-//   ipAddress String?
-//   userAgent String?
+  ipAddress String?
+  userAgent String?
 
-//   browser String?
-//   os      String?
+  browser String?
+  os      String?
 
-//   playDate DateTime
+  playDate DateTime
 
-//   isTester Boolean @default(false)
+  isTester Boolean @default(false)
 
-//   startedAt   DateTime  @default(now())
-//   completedAt DateTime?
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
 
-//   durationSeconds Int?
+  durationSeconds Int?
 
-//   completed Boolean @default(false)
+  completed Boolean @default(false)
 
-//   score Int @default(0)
+  score Int @default(0)
 
-//   wrongAttempts Int @default(0)
+  wrongAttempts Int @default(0)
 
-//   hintsUsed Int @default(0)
+  hintsUsed Int @default(0)
 
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-//   // Relations
-//   puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+  // Relations
+  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
 
-//   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-//   answers PuzzleAnswer[]
+  answers PuzzleAnswer[]
 
-//   winner PuzzleWinner?
+  winner PuzzleWinner?
 
-//   @@index([puzzleId])
-//   @@index([userId])
-//   @@index([playDate])
-//   @@index([deviceId])
-//   @@index([fingerprint])
-//   @@index([completed])
-//   @@index([isTester])
-//   @@map("puzzle_attempts")
-// }
+  @@index([puzzleId])
+  @@index([userId])
+  @@index([playDate])
+  @@index([deviceId])
+  @@index([fingerprint])
+  @@index([completed])
+  @@index([isTester])
+  @@map("puzzle_attempts")
+}
 
-// // ===============================
-// // PUZZLE ANSWERS
-// // ===============================
+// ===============================
+// PUZZLE ANSWERS
+// ===============================
 
-// model PuzzleAnswer {
-//   id String @id @default(uuid())
+model PuzzleAnswer {
+  id String @id @default(uuid())
 
-//   attemptId String
+  attemptId String
 
-//   row Int
+  row Int
 
-//   column Int
+  column Int
 
-//   enteredLetter String?
+  enteredLetter String?
 
-//   isCorrect Boolean @default(false)
+  isCorrect Boolean @default(false)
 
-//   updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
-//   // Relations
-//   attempt PuzzleAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  // Relations
+  attempt PuzzleAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
 
-//   @@unique([attemptId, row, column])
-//   @@index([attemptId])
-//   @@map("puzzle_answers")
-// }
+  @@unique([attemptId, row, column])
+  @@index([attemptId])
+  @@map("puzzle_answers")
+}
 
-// // ===============================
-// // DAILY WINNER
-// // ===============================
+// ===============================
+// DAILY WINNER
+// ===============================
 
-// model PuzzleWinner {
-//   id String @id @default(uuid())
+model PuzzleWinner {
+  id String @id @default(uuid())
 
-//   puzzleId String
+  puzzleId String
 
-//   userId String
+  userId String
 
-//   attemptId String @unique
+  attemptId String @unique
 
-//   status WinnerStatus @default(PENDING)
+  status WinnerStatus @default(PENDING)
+  prizeStatus PrizeStatus?
+  reward String?
 
-//   reward String?
+  announcedAt DateTime?
 
-//   announcedAt DateTime?
+  claimedAt DateTime?
 
-//   claimedAt DateTime?
+  createdAt DateTime @default(now())
 
-//   createdAt DateTime @default(now())
+  // Relations
+  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
 
-//   // Relations
-//   puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-//   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempt PuzzleAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
 
-//   attempt PuzzleAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-
-//   @@unique([puzzleId, userId])
-//   @@index([status])
-//   @@map("puzzle_winners")
-// }
+  @@unique([puzzleId, userId])
+  @@index([status])
+  @@map("puzzle_winners")
+}
 
 // // ===============================
 // // USER STATISTICS
