@@ -31,20 +31,6 @@ const getWinnerHistory = async (req, res) => {
   }
 };
 
-const exportWinnerHistory = async (req, res) => {
-  try {
-    const csvContent = await WinnerHistoryService.exportWinnerHistory(prisma, req.query);
-    
-    // Set headers to trigger file download in the browser
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", "attachment; filename=winner-history.csv");
-    
-    return res.status(StatusCodes.OK).send(csvContent);
-  } catch (error) {
-    return handleError(res, error);
-  }
-};
-
 const getWinnerById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -61,6 +47,5 @@ const getWinnerById = async (req, res) => {
 
 export const WinnerHistoryController = {
   getWinnerHistory,
-  exportWinnerHistory,
   getWinnerById,
 };

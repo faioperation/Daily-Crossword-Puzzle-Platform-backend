@@ -9,8 +9,6 @@ router.use(checkAuthMiddleware(Role.SYSTEM_OWNER));
 
 router.get("/", WinnerHistoryController.getWinnerHistory);
 
-router.get("/export", WinnerHistoryController.exportWinnerHistory);
-
 router.get("/:id", WinnerHistoryController.getWinnerById);
 
 export const WinnerHistoryRouter = router;

@@ -68,62 +68,6 @@ const getWinnerHistory = async (prisma, query) => {
   return { meta, data: mappedData };
 };
 
-const exportWinnerHistory = async (prisma, query) => {
-  const queryParams = { ...query };
-  const dateVal = queryParams.date;
-  delete queryParams.date;
-
-  const queryBuilder = new QueryBuilder(queryParams)
-    .search(["reward", { user: ["name", "email"] }])
-    .filter()
-    .sort("-announcedAt"); // No pagination for export
-
-  // Handle date won filtering
-  if (dateVal) {
-    const startOfDay = new Date(dateVal);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    const endOfDay = new Date(dateVal);
-    endOfDay.setUTCHours(23, 59, 59, 999);
-    
-    queryBuilder.where.announcedAt = {
-      gte: startOfDay,
-      lte: endOfDay,
-    };
-  }
-
-  const builtQuery = queryBuilder.build();
-  delete builtQuery.select;
-
-  const winners = await prisma.puzzleWinner.findMany({
-    ...builtQuery,
-    include: {
-      user: {
-        select: {
-          name: true,
-          email: true,
-        },
-      },
-    },
-  });
-
-  // Construct CSV Header and rows
-  const headers = ["Winner Name", "Winner Email", "Type", "Winner Date", "Selection", "Status", "Prize/Reward"];
-  const rows = winners.map((item) => {
-    const name = item.user.name.replace(/"/g, '""');
-    const email = item.user.email.replace(/"/g, '""');
-    const type = formatEnumString(item.winnerType);
-    const date = item.announcedAt 
-      ? item.announcedAt.toISOString().split("T")[0] 
-      : item.createdAt.toISOString().split("T")[0];
-    const selection = formatEnumString(item.selectionType);
-    const status = formatEnumString(item.status);
-    const prize = (item.reward || "N/A").replace(/"/g, '""');
-
-    return `"${name}","${email}","${type}","${date}","${selection}","${status}","${prize}"`;
-  });
-
-  return [headers.join(","), ...rows].join("\n");
-};
 
 const getWinnerById = async (prisma, id) => {
   const item = await prisma.puzzleWinner.findUnique({
@@ -170,6 +114,5 @@ const getWinnerById = async (prisma, id) => {
 
 export const WinnerHistoryService = {
   getWinnerHistory,
-  exportWinnerHistory,
   getWinnerById,
 };
