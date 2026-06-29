@@ -31,8 +31,10 @@ const updateSettings = async (prisma, payload) => {
     });
   } else {
     const updateData = {};
-    if (payload.websiteName !== undefined) updateData.websiteName = payload.websiteName;
-    if (payload.supportEmail !== undefined) updateData.supportEmail = payload.supportEmail;
+    if (payload.websiteName !== undefined)
+      updateData.websiteName = payload.websiteName;
+    if (payload.supportEmail !== undefined)
+      updateData.supportEmail = payload.supportEmail;
     if (payload.logo !== undefined) updateData.logo = payload.logo;
 
     settings = await prisma.setting.update({

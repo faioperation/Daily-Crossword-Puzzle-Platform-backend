@@ -20,7 +20,11 @@ const handleError = (res, error) => {
 const createCell = async (req, res) => {
   try {
     const { puzzleId } = req.params;
-    const result = await PuzzleCellService.createCell(prisma, puzzleId, req.body);
+    const result = await PuzzleCellService.createCell(
+      prisma,
+      puzzleId,
+      req.body,
+    );
 
     return res.status(StatusCodes.CREATED).json({
       success: true,
@@ -71,7 +75,12 @@ const getCellById = async (req, res) => {
 const updateCell = async (req, res) => {
   try {
     const { puzzleId, id } = req.params;
-    const result = await PuzzleCellService.updateCell(prisma, puzzleId, id, req.body);
+    const result = await PuzzleCellService.updateCell(
+      prisma,
+      puzzleId,
+      id,
+      req.body,
+    );
 
     return res.status(StatusCodes.OK).json({
       success: true,

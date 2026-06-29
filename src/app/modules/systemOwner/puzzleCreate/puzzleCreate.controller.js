@@ -33,7 +33,11 @@ const mapPuzzleResponse = (puzzle) => ({
 const createPuzzle = async (req, res) => {
   try {
     const userId = req.user.id;
-    const result = await PuzzleCreateService.createPuzzle(prisma, userId, req.body);
+    const result = await PuzzleCreateService.createPuzzle(
+      prisma,
+      userId,
+      req.body,
+    );
 
     return res.status(StatusCodes.CREATED).json({
       success: true,
@@ -61,7 +65,10 @@ const getAllPuzzles = async (req, res) => {
 
 const getPuzzleById = async (req, res) => {
   try {
-    const result = await PuzzleCreateService.getPuzzleById(prisma, req.params.id);
+    const result = await PuzzleCreateService.getPuzzleById(
+      prisma,
+      req.params.id,
+    );
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Puzzle retrieved successfully",
@@ -74,7 +81,11 @@ const getPuzzleById = async (req, res) => {
 
 const updatePuzzle = async (req, res) => {
   try {
-    const result = await PuzzleCreateService.updatePuzzle(prisma, req.params.id, req.body);
+    const result = await PuzzleCreateService.updatePuzzle(
+      prisma,
+      req.params.id,
+      req.body,
+    );
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Puzzle updated successfully",
@@ -87,7 +98,10 @@ const updatePuzzle = async (req, res) => {
 
 const deletePuzzle = async (req, res) => {
   try {
-    const result = await PuzzleCreateService.deletePuzzle(prisma, req.params.id);
+    const result = await PuzzleCreateService.deletePuzzle(
+      prisma,
+      req.params.id,
+    );
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Puzzle deleted successfully",

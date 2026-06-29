@@ -15,10 +15,16 @@ const createCell = async (prisma, puzzleId, payload) => {
   // Validate all cells before starting database operations
   for (const cell of cells) {
     if (cell.row >= puzzle.rows) {
-      throw new DevBuildError(`Cell row ${cell.row} exceeds puzzle row limit of ${puzzle.rows}`, StatusCodes.BAD_REQUEST);
+      throw new DevBuildError(
+        `Cell row ${cell.row} exceeds puzzle row limit of ${puzzle.rows}`,
+        StatusCodes.BAD_REQUEST,
+      );
     }
     if (cell.column >= puzzle.columns) {
-      throw new DevBuildError(`Cell column ${cell.column} exceeds puzzle column limit of ${puzzle.columns}`, StatusCodes.BAD_REQUEST);
+      throw new DevBuildError(
+        `Cell column ${cell.column} exceeds puzzle column limit of ${puzzle.columns}`,
+        StatusCodes.BAD_REQUEST,
+      );
     }
   }
 
@@ -60,10 +66,7 @@ const getAllCells = async (prisma, puzzleId) => {
 
   const cells = await prisma.puzzleCell.findMany({
     where: { puzzleId },
-    orderBy: [
-      { row: "asc" },
-      { column: "asc" },
-    ],
+    orderBy: [{ row: "asc" }, { column: "asc" }],
   });
 
   return {
@@ -113,14 +116,20 @@ const updateCell = async (prisma, puzzleId, cellId, payload) => {
   const updateData = {};
   if (row !== undefined) {
     if (row >= puzzle.rows) {
-      throw new DevBuildError(`Cell row exceeds puzzle row limit of ${puzzle.rows}`, StatusCodes.BAD_REQUEST);
+      throw new DevBuildError(
+        `Cell row exceeds puzzle row limit of ${puzzle.rows}`,
+        StatusCodes.BAD_REQUEST,
+      );
     }
     updateData.row = row;
   }
 
   if (column !== undefined) {
     if (column >= puzzle.columns) {
-      throw new DevBuildError(`Cell column exceeds puzzle column limit of ${puzzle.columns}`, StatusCodes.BAD_REQUEST);
+      throw new DevBuildError(
+        `Cell column exceeds puzzle column limit of ${puzzle.columns}`,
+        StatusCodes.BAD_REQUEST,
+      );
     }
     updateData.column = column;
   }
@@ -139,7 +148,10 @@ const updateCell = async (prisma, puzzleId, cellId, payload) => {
     });
 
     if (existingCell) {
-      throw new DevBuildError("A cell already exists at this coordinate", StatusCodes.CONFLICT);
+      throw new DevBuildError(
+        "A cell already exists at this coordinate",
+        StatusCodes.CONFLICT,
+      );
     }
   }
 

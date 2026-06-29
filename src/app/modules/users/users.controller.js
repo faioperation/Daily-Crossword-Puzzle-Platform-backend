@@ -23,11 +23,7 @@ const signup = async (req, res) => {
     const { user } = await UsersService.signup(prisma, req.body);
 
     // Automatically send OTP after signup
-    await OtpService.sendOtp(
-      prisma,
-      user.email,
-      user.name,
-    );
+    await OtpService.sendOtp(prisma, user.email, user.name);
 
     return res.status(StatusCodes.CREATED).json({
       success: true,
@@ -62,7 +58,11 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const updated = await UsersService.updateProfile(prisma, req.user.id, req.body);
+    const updated = await UsersService.updateProfile(
+      prisma,
+      req.user.id,
+      req.body,
+    );
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Profile updated successfully",
@@ -100,7 +100,11 @@ const updateUserStatus = async (req, res) => {
     const targetUserId = req.params.id;
     const { isActive } = req.body;
 
-    const updated = await UsersService.updateUserStatus(prisma, targetUserId, isActive);
+    const updated = await UsersService.updateUserStatus(
+      prisma,
+      targetUserId,
+      isActive,
+    );
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "User status updated successfully",

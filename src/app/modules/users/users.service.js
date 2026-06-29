@@ -170,7 +170,7 @@ const getAllUsers = async (prisma, query) => {
     .paginate();
 
   const builtQuery = queryBuilder.build();
-  
+
   if (!builtQuery.select) {
     builtQuery.select = {
       id: true,

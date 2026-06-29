@@ -18,8 +18,6 @@ const handleError = (res, error) => {
   });
 };
 
-
-
 const sendOtp = async (req, res) => {
   try {
     const { email } = req.body;

@@ -4,7 +4,10 @@ const usernameSchema = z
   .string()
   .min(3, "Username must be at least 3 characters")
   .max(30, "Username must be at most 30 characters")
-  .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain alphanumeric characters and underscores")
+  .regex(
+    /^[a-zA-Z0-9_]+$/,
+    "Username can only contain alphanumeric characters and underscores",
+  )
   .transform((val) => val.trim().toLowerCase());
 
 const signupSchema = z.object({

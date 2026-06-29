@@ -18,16 +18,10 @@ router.post(
 );
 
 // Get all cells of a puzzle
-router.get(
-  "/:puzzleId",
-  PuzzleCellController.getAllCells,
-);
+router.get("/:puzzleId", PuzzleCellController.getAllCells);
 
 // Get single cell of a puzzle
-router.get(
-  "/:puzzleId/:id",
-  PuzzleCellController.getCellById,
-);  
+router.get("/:puzzleId/:id", PuzzleCellController.getCellById);
 
 // Update cell of a puzzle
 router.patch(
@@ -37,9 +31,6 @@ router.patch(
 );
 
 // Delete cell of a puzzle
-router.delete(
-  "/:puzzleId/:id",
-  PuzzleCellController.deleteCell,
-);
+router.delete("/:puzzleId/:id", PuzzleCellController.deleteCell);
 
 export const PuzzleCellRouter = router;

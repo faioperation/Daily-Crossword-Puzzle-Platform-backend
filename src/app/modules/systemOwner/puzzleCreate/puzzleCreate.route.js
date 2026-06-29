@@ -18,16 +18,10 @@ router.post(
 );
 
 // Get all puzzles
-router.get(
-  "/all",
-  PuzzleCreateController.getAllPuzzles,
-);
+router.get("/all", PuzzleCreateController.getAllPuzzles);
 
 // Get single puzzle by ID
-router.get(
-  "/:id",
-  PuzzleCreateController.getPuzzleById,
-);
+router.get("/:id", PuzzleCreateController.getPuzzleById);
 
 // Update a puzzle by ID
 router.patch(
@@ -37,9 +31,6 @@ router.patch(
 );
 
 // Delete a puzzle by ID
-router.delete(
-  "/:id",
-  PuzzleCreateController.deletePuzzle,
-);
+router.delete("/:id", PuzzleCreateController.deletePuzzle);
 
 export const PuzzleCreateRouter = router;

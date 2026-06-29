@@ -9,7 +9,6 @@ import jwt from "jsonwebtoken";
 const RESET_TOKEN_KEY_PREFIX = "reset-token";
 const RESET_TOKEN_EXPIRATION = 10 * 60; // 10 minutes
 
-
 const login = async (prisma, payload) => {
   const { email, password } = payload;
 

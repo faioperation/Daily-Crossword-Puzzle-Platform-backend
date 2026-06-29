@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-
-
 const sendOtpSchema = z.object({
   body: z.object({
     email: z

@@ -3,7 +3,15 @@ import DevBuildError from "../../../lib/DevBuildError.js";
 import { QueryBuilder } from "../../../utils/QueryBuilder.js";
 
 const createPuzzle = async (prisma, userId, payload) => {
-  const { puzzleName, publishDate, difficulty, status, dailyPrize, row, column } = payload;
+  const {
+    puzzleName,
+    publishDate,
+    difficulty,
+    status,
+    dailyPrize,
+    row,
+    column,
+  } = payload;
 
   const newPuzzle = await prisma.puzzle.create({
     data: {
@@ -62,12 +70,22 @@ const updatePuzzle = async (prisma, puzzleId, payload) => {
     throw new DevBuildError("Puzzle not found", StatusCodes.NOT_FOUND);
   }
 
-  const { puzzleName, publishDate, difficulty, status, dailyPrize, row, column } = payload;
+  const {
+    puzzleName,
+    publishDate,
+    difficulty,
+    status,
+    dailyPrize,
+    row,
+    column,
+  } = payload;
 
   const updateData = {};
   if (puzzleName !== undefined) updateData.title = puzzleName;
-  if (publishDate !== undefined) updateData.publishDate = publishDate ? new Date(publishDate) : null;
-  if (difficulty !== undefined) updateData.difficulty = difficulty.toUpperCase();
+  if (publishDate !== undefined)
+    updateData.publishDate = publishDate ? new Date(publishDate) : null;
+  if (difficulty !== undefined)
+    updateData.difficulty = difficulty.toUpperCase();
   if (status !== undefined) updateData.status = status.toUpperCase();
   if (dailyPrize !== undefined) updateData.dailyPrize = dailyPrize;
   if (row !== undefined) updateData.rows = row;
