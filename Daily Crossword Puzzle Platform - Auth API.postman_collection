@@ -1,0 +1,1374 @@
+{
+  "info": {
+    "_postman_id": "73ba0a95-747f-4934-99d9-42fd82579826",
+    "name": "Daily Crossword Puzzle Platform - Auth API",
+    "description": "Postman Collection for Daily Crossword Puzzle Platform Backend APIs, organized by role and modules.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "50958698"
+  },
+  "item": [
+    {
+      "name": "SYSTEM_OWNER",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Login (SYSTEM_OWNER)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@puzzle.com\",\n  \"password\": \"AdminPassword123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Authenticate system owner and retrieve access and refresh tokens."
+              },
+              "response": []
+            },
+            {
+              "name": "Change Password (SYSTEM_OWNER)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{systemOwnerAccessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"AdminPassword123\",\n  \"newPassword\": \"NewAdminPassword123\",\n  \"confirmPassword\": \"NewAdminPassword123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/change-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "change-password"
+                  ]
+                },
+                "description": "Change password for the authenticated system owner."
+              },
+              "response": []
+            },
+            {
+              "name": "Reset Password (SYSTEM_OWNER)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{systemOwnerResetToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"newPassword\": \"ResetAdminPassword123\",\n  \"confirmPassword\": \"ResetAdminPassword123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/reset-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "reset-password"
+                  ]
+                },
+                "description": "Reset password using short-lived reset token."
+              },
+              "response": []
+            },
+            {
+              "name": "Logout (SYSTEM_OWNER)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{systemOwnerAccessToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/logout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
+                },
+                "description": "Logout system owner and clear refresh token cookie."
+              },
+              "response": []
+            }
+          ],
+          "description": "Authentication module for SYSTEM_OWNER."
+        },
+        {
+          "name": "Profile",
+          "item": [
+            {
+              "name": "profile",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{systemOwnerAccessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "profile"
+                  ]
+                },
+                "description": "Authenticate system owner and retrieve access and refresh tokens."
+              },
+              "response": []
+            },
+            {
+              "name": "update",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{systemOwnerAccessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "name",
+                      "value": "",
+                      "type": "text",
+                      "uuid": "34377032-78e1-444f-8763-a9a984c4db89"
+                    },
+                    {
+                      "key": "username",
+                      "value": "",
+                      "type": "text",
+                      "uuid": "0b4f631b-44d0-4858-9ff5-30abf80ec841"
+                    },
+                    {
+                      "key": "avatar",
+                      "type": "file",
+                      "uuid": "7ceeb771-8bb9-4c61-be7e-5057ab9972cc",
+                      "value": null
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "profile"
+                  ]
+                },
+                "description": "Authenticate system owner and retrieve access and refresh tokens."
+              },
+              "response": []
+            }
+          ],
+          "description": "Authentication module for SYSTEM_OWNER."
+        },
+        {
+          "name": "User Management",
+          "item": [
+            {
+              "name": "users",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{systemOwnerAccessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users"
+                  ]
+                },
+                "description": "Authenticate system owner and retrieve access and refresh tokens."
+              },
+              "response": []
+            },
+            {
+              "name": "Update User Status",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{systemOwnerAccessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"isActive\": false\r\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/:userId/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":userId",
+                    "status"
+                  ],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "dbf1f6c2-62e4-4dc1-abbf-727ba74a185c"
+                    }
+                  ]
+                },
+                "description": "Authenticate system owner and retrieve access and refresh tokens."
+              },
+              "response": []
+            },
+            {
+              "name": "delete",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{systemOwnerAccessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": ""
+                    }
+                  ]
+                },
+                "description": "Authenticate system owner and retrieve access and refresh tokens."
+              },
+              "response": []
+            }
+          ],
+          "description": "Authentication module for SYSTEM_OWNER."
+        },
+        {
+          "name": "Pazzel Management",
+          "item": [
+            {
+              "name": "create puzzle",
+              "item": [
+                {
+                  "name": "create",
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{systemOwnerAccessToken}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n  \"puzzleName\": \"Daily Challenge #1\",\r\n  \"publishDate\": \"2026-06-28T12:00:00Z\",\r\n  \"difficulty\": \"medium\",\r\n  \"status\": \"draft\",\r\n  \"dailyPrize\": \"$100 Cash Prize\",\r\n  \"row\": 5,\r\n  \"column\": 5\r\n}\r\n"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/system-owner/puzzle/create",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "system-owner",
+                        "puzzle",
+                        "create"
+                      ]
+                    },
+                    "description": "Authenticate system owner and retrieve access and refresh tokens."
+                  },
+                  "response": []
+                },
+                {
+                  "name": "get all",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{systemOwnerAccessToken}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": ""
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/system-owner/puzzle/all",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "system-owner",
+                        "puzzle",
+                        "all"
+                      ]
+                    },
+                    "description": "Authenticate system owner and retrieve access and refresh tokens."
+                  },
+                  "response": []
+                },
+                {
+                  "name": "get single",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{systemOwnerAccessToken}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": ""
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/system-owner/puzzle/:puzzleId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "system-owner",
+                        "puzzle",
+                        ":puzzleId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "puzzleId",
+                          "value": "b06d7c82-071d-4c9e-966f-63803b1c669a"
+                        }
+                      ]
+                    },
+                    "description": "Authenticate system owner and retrieve access and refresh tokens."
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Update",
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{systemOwnerAccessToken}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "PATCH",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n  \"puzzleName\": \"Daily Challenge #1\",\r\n  \"publishDate\": \"2026-06-28T12:00:00Z\",\r\n  \"difficulty\": \"medium\",\r\n  \"status\": \"draft\",\r\n  \"dailyPrize\": \"$100 Cash Prize\",\r\n  \"row\": 15,\r\n  \"column\": 15\r\n}\r\n"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/system-owner/puzzle/:puzzleId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "system-owner",
+                        "puzzle",
+                        ":puzzleId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "puzzleId",
+                          "value": "b06d7c82-071d-4c9e-966f-63803b1c669a"
+                        }
+                      ]
+                    },
+                    "description": "Authenticate system owner and retrieve access and refresh tokens."
+                  },
+                  "response": []
+                },
+                {
+                  "name": "delete",
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{systemOwnerAccessToken}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "DELETE",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/system-owner/puzzle/:puzzleId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "system-owner",
+                        "puzzle",
+                        ":puzzleId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "puzzleId",
+                          "value": "f9b7d7b1-c001-4597-831b-efa8d7f51545"
+                        }
+                      ]
+                    },
+                    "description": "Authenticate system owner and retrieve access and refresh tokens."
+                  },
+                  "response": []
+                }
+              ]
+            },
+            {
+              "name": "create cell",
+              "item": [
+                {
+                  "name": "create",
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{systemOwnerAccessToken}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "// 5x5 Puzzle>?>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\r\n{\r\n  \"cells\": [\r\n    { \"row\": 0, \"column\": 0, \"letter\": \"H\", \"isBlack\": false, \"number\": 1 },\r\n    { \"row\": 0, \"column\": 1, \"letter\": \"E\", \"isBlack\": false, \"number\": null },\r\n    { \"row\": 0, \"column\": 2, \"letter\": \"L\", \"isBlack\": false, \"number\": 2 },\r\n    { \"row\": 0, \"column\": 3, \"letter\": \"L\", \"isBlack\": false, \"number\": null },\r\n    { \"row\": 0, \"column\": 4, \"letter\": \"O\", \"isBlack\": false, \"number\": 3 },\r\n\r\n    { \"row\": 1, \"column\": 0, \"letter\": \"A\", \"isBlack\": false, \"number\": 4 },\r\n    { \"row\": 1, \"column\": 1, \"letter\": null, \"isBlack\": true, \"number\": null },\r\n    { \"row\": 1, \"column\": 2, \"letter\": \"I\", \"isBlack\": false, \"number\": null },\r\n    { \"row\": 1, \"column\": 3, \"letter\": null, \"isBlack\": true, \"number\": null },\r\n    { \"row\": 1, \"column\": 4, \"letter\": \"P\", \"isBlack\": false, \"number\": null },\r\n\r\n    { \"row\": 2, \"column\": 0, \"letter\": \"P\", \"isBlack\": false, \"number\": 5 },\r\n    { \"row\": 2, \"column\": 1, \"letter\": \"E\", \"isBlack\": false, \"number\": null },\r\n    { \"row\": 2, \"column\": 2, \"letter\": \"M\", \"isBlack\": false, \"number\": null },\r\n    { \"row\": 2, \"column\": 3, \"letter\": \"A\", \"isBlack\": false, \"number\": null },\r\n    { \"row\": 2, \"column\": 4, \"letter\": \"E\", \"isBlack\": false, \"number\": null },\r\n\r\n    { \"row\": 3, \"column\": 0, \"letter\": \"P\", \"isBlack\": false, \"number\": null },\r\n    { \"row\": 3, \"column\": 1, \"letter\": null, \"isBlack\": true, \"number\": null },\r\n    { \"row\": 3, \"column\": 2, \"letter\": \"I\", \"isBlack\": false, \"number\": null },\r\n    { \"row\": 3, \"column\": 3, \"letter\": null, \"isBlack\": true, \"number\": null },\r\n    { \"row\": 3, \"column\": 4, \"letter\": \"N\", \"isBlack\": false, \"number\": null },\r\n\r\n    { \"row\": 4, \"column\": 0, \"letter\": \"Y\", \"isBlack\": false, \"number\": 6 },\r\n    { \"row\": 4, \"column\": 1, \"letter\": \"E\", \"isBlack\": false, \"number\": null },\r\n    { \"row\": 4, \"column\": 2, \"letter\": \"T\", \"isBlack\": false, \"number\": null },\r\n    { \"row\": 4, \"column\": 3, \"letter\": \"I\", \"isBlack\": false, \"number\": null },\r\n    { \"row\": 4, \"column\": 4, \"letter\": \"S\", \"isBlack\": false, \"number\": null }\r\n  ]\r\n}\r\n"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/system-owner/puzzle/cells/create/:puzzleId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "system-owner",
+                        "puzzle",
+                        "cells",
+                        "create",
+                        ":puzzleId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "puzzleId",
+                          "value": "2b4e1134-83f6-4307-9ebe-accf93776268"
+                        }
+                      ]
+                    },
+                    "description": "Authenticate system owner and retrieve access and refresh tokens."
+                  },
+                  "response": []
+                },
+                {
+                  "name": "get all",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{systemOwnerAccessToken}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": ""
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/system-owner/puzzle/cells/:puzzleId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "system-owner",
+                        "puzzle",
+                        "cells",
+                        ":puzzleId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "puzzleId",
+                          "value": "2b4e1134-83f6-4307-9ebe-accf93776268"
+                        }
+                      ]
+                    },
+                    "description": "Authenticate system owner and retrieve access and refresh tokens."
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Update",
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{systemOwnerAccessToken}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "PATCH",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n  \"puzzleName\": \"Daily Challenge #1\",\r\n  \"publishDate\": \"2026-06-28T12:00:00Z\",\r\n  \"difficulty\": \"medium\",\r\n  \"status\": \"draft\",\r\n  \"dailyPrize\": \"$100 Cash Prize\",\r\n  \"row\": 15,\r\n  \"column\": 15\r\n}\r\n"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/system-owner/puzzle/cells/:puzzleId/:cellId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "system-owner",
+                        "puzzle",
+                        "cells",
+                        ":puzzleId",
+                        ":cellId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "puzzleId",
+                          "value": ""
+                        },
+                        {
+                          "key": "cellId",
+                          "value": ""
+                        }
+                      ]
+                    },
+                    "description": "Authenticate system owner and retrieve access and refresh tokens."
+                  },
+                  "response": []
+                },
+                {
+                  "name": "delete",
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{systemOwnerAccessToken}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "DELETE",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{baseUrl}}/system-owner/puzzle/cells/:puzzleId/:cellId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "system-owner",
+                        "puzzle",
+                        "cells",
+                        ":puzzleId",
+                        ":cellId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "puzzleId",
+                          "value": "f9b7d7b1-c001-4597-831b-efa8d7f51545"
+                        },
+                        {
+                          "key": "cellId",
+                          "value": "730a3cd1-9759-45af-aa51-0fcab3e6ceea"
+                        }
+                      ]
+                    },
+                    "description": "Authenticate system owner and retrieve access and refresh tokens."
+                  },
+                  "response": []
+                },
+                {
+                  "name": "🛑dont need to use get single",
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  },
+                  "request": {
+                    "auth": {
+                      "type": "bearer",
+                      "bearer": [
+                        {
+                          "key": "token",
+                          "value": "{{systemOwnerAccessToken}}",
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": ""
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/system-owner/puzzle/cells/:puzzleId/:cellId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "system-owner",
+                        "puzzle",
+                        "cells",
+                        ":puzzleId",
+                        ":cellId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "puzzleId",
+                          "value": "f9b7d7b1-c001-4597-831b-efa8d7f51545"
+                        },
+                        {
+                          "key": "cellId",
+                          "value": "0ab8eb6c-f4c1-4bce-9698-4ceee4a1ee75"
+                        }
+                      ]
+                    },
+                    "description": "Authenticate system owner and retrieve access and refresh tokens."
+                  },
+                  "response": []
+                }
+              ]
+            }
+          ],
+          "description": "Authentication module for SYSTEM_OWNER."
+        }
+      ],
+      "description": "Endpoints and actions for SYSTEM_OWNER role."
+    },
+    {
+      "name": "USER",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Signup (USER)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Begun User\",\n  \"username\": \"begun\",\n  \"email\": \"begun@test.com\",\n  \"password\": \"123456\",\n  \"confirm_password\": \"123456\",\n  \"role\": \"USER\"\n}\n"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/signup",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "signup"
+                  ]
+                },
+                "description": "Register a new User (defaults to USER role, OTP will be automatically generated and sent)."
+              },
+              "response": []
+            },
+            {
+              "name": "Send OTP (USER)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/send-otp",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "send-otp"
+                  ]
+                },
+                "description": "Resend/send email verification OTP to the user."
+              },
+              "response": []
+            },
+            {
+              "name": "Verify OTP (USER)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"otp\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/verify-otp",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "verify-otp"
+                  ]
+                },
+                "description": "Verify the registration OTP and activate/verify the user account."
+              },
+              "response": []
+            },
+            {
+              "name": "Login (USER)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"begun@test.com\",\n  \"password\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Authenticate user and retrieve tokens."
+              },
+              "response": []
+            },
+            {
+              "name": "Refresh Token (USER)",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/refresh-token",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "refresh-token"
+                  ]
+                },
+                "description": "Uses the refreshToken in cookies to issue a new accessToken."
+              },
+              "response": []
+            },
+            {
+              "name": "Forgot Password (USER)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/forgot-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "forgot-password"
+                  ]
+                },
+                "description": "Request a forgot password OTP."
+              },
+              "response": []
+            },
+            {
+              "name": "Verify Forgot Password OTP (USER)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"otp\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/verify-forgot-password-otp",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "verify-forgot-password-otp"
+                  ]
+                },
+                "description": "Verify forgot password OTP and receive a short-lived password reset token."
+              },
+              "response": []
+            },
+            {
+              "name": "Reset Password (USER)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{userResetToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"newPassword\": \"NewUserPassword123\",\n  \"confirmPassword\": \"NewUserPassword123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/reset-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "reset-password"
+                  ]
+                },
+                "description": "Reset password using short-lived reset token."
+              },
+              "response": []
+            },
+            {
+              "name": "Change Password (USER)",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{userAccessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{userAccessToken}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"1234567\",\n  \"newPassword\": \"123456\",\n  \"confirmPassword\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/change-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "change-password"
+                  ]
+                },
+                "description": "Change password for the authenticated user."
+              },
+              "response": []
+            },
+            {
+              "name": "Logout (USER)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{userAccessToken}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/logout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
+                },
+                "description": "Logout user and clear refresh token cookie."
+              },
+              "response": []
+            }
+          ],
+          "description": "Authentication module for USER."
+        },
+        {
+          "name": "OTP",
+          "item": [
+            {
+              "name": "Send OTP",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"name\": \"John Doe\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/otp/send",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "otp",
+                    "send"
+                  ]
+                },
+                "description": "Send OTP to user email."
+              },
+              "response": []
+            },
+            {
+              "name": "Verify OTP",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"otp\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/otp/verify",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "otp",
+                    "verify"
+                  ]
+                },
+                "description": "Verify the sent OTP."
+              },
+              "response": []
+            }
+          ],
+          "description": "OTP module for USER."
+        },
+        {
+          "name": "Profile",
+          "item": [
+            {
+              "name": "profile",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{userAccessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": ""
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "profile"
+                  ]
+                },
+                "description": "Authenticate system owner and retrieve access and refresh tokens."
+              },
+              "response": []
+            },
+            {
+              "name": "update",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{userAccessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "name",
+                      "value": "",
+                      "type": "text",
+                      "uuid": "34377032-78e1-444f-8763-a9a984c4db89"
+                    },
+                    {
+                      "key": "username",
+                      "value": "",
+                      "type": "text",
+                      "uuid": "0b4f631b-44d0-4858-9ff5-30abf80ec841"
+                    },
+                    {
+                      "key": "avatar",
+                      "type": "file",
+                      "uuid": "7ceeb771-8bb9-4c61-be7e-5057ab9972cc",
+                      "value": null
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/profile",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "profile"
+                  ]
+                },
+                "description": "Authenticate system owner and retrieve access and refresh tokens."
+              },
+              "response": []
+            }
+          ],
+          "description": "Authentication module for SYSTEM_OWNER."
+        }
+      ],
+      "description": "Endpoints and actions for USER role."
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "systemOwnerAccessToken",
+      "value": "your_system_owner_access_token_here"
+    },
+    {
+      "key": "systemOwnerResetToken",
+      "value": "your_system_owner_reset_token_here"
+    },
+    {
+      "key": "userAccessToken",
+      "value": "your_user_access_token_here"
+    },
+    {
+      "key": "userResetToken",
+      "value": "your_user_reset_token_here"
+    }
+  ]
+}

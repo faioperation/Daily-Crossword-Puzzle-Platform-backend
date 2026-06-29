@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { ZodError } from "zod";
 import { AppError } from "../errorHelper/appError.js";
 import { envVars } from "../config/env.js";
 
@@ -39,6 +40,16 @@ export const globalErrorHandler = (err, req, res, next) => {
   else if (err instanceof Prisma.PrismaClientValidationError) {
     statusCode = 400;
     message = err.message;
+  }
+
+  // ✅ Zod Validation Errors
+  else if (err instanceof ZodError) {
+    statusCode = 400;
+    message = err.issues.map((issue) => issue.message).join(", ");
+    errorSource = err.issues.map((issue) => ({
+      path: issue.path[issue.path.length - 1],
+      message: issue.message,
+    }));
   }
 
   // ✅ Custom App Error
