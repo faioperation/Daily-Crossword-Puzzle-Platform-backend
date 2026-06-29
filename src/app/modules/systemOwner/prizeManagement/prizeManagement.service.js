@@ -3,19 +3,23 @@ import DevBuildError from "../../../lib/DevBuildError.js";
 import { QueryBuilder } from "../../../utils/QueryBuilder.js";
 
 const getAllPrizes = async (prisma, query) => {
-  const queryBuilder = new QueryBuilder(query)
+  const queryParams = { ...query };
+  const dateVal = queryParams.date;
+  delete queryParams.date;
+
+  const queryBuilder = new QueryBuilder(queryParams)
     .search(["reward", { user: ["name", "email"] }])
     .filter()
     .sort("-announcedAt")
     .paginate();
 
   // If a date filter is passed, filter announcedAt/createdAt for that day
-  if (query.date) {
-    const startOfDay = new Date(query.date);
+  if (dateVal) {
+    const startOfDay = new Date(dateVal);
     startOfDay.setUTCHours(0, 0, 0, 0);
-    const endOfDay = new Date(query.date);
+    const endOfDay = new Date(dateVal);
     endOfDay.setUTCHours(23, 59, 59, 999);
-    
+
     queryBuilder.where.announcedAt = {
       gte: startOfDay,
       lte: endOfDay,
@@ -23,7 +27,7 @@ const getAllPrizes = async (prisma, query) => {
   }
 
   const builtQuery = queryBuilder.build();
-  
+
   // Exclude select from builtQuery as we manually include user relation
   delete builtQuery.select;
 
@@ -49,8 +53,8 @@ const getAllPrizes = async (prisma, query) => {
     winnerName: item.user.name,
     winnerEmail: item.user.email,
     prize: item.reward,
-    dateWon: item.announcedAt 
-      ? item.announcedAt.toISOString().split("T")[0] 
+    dateWon: item.announcedAt
+      ? item.announcedAt.toISOString().split("T")[0]
       : item.createdAt.toISOString().split("T")[0],
     currentStatus: item.prizeStatus || "EMAIL_SENT",
   }));
@@ -85,8 +89,8 @@ const updatePrizeStatus = async (prisma, id, prizeStatus) => {
     winnerName: updated.user.name,
     winnerEmail: updated.user.email,
     prize: updated.reward,
-    dateWon: updated.announcedAt 
-      ? updated.announcedAt.toISOString().split("T")[0] 
+    dateWon: updated.announcedAt
+      ? updated.announcedAt.toISOString().split("T")[0]
       : updated.createdAt.toISOString().split("T")[0],
     currentStatus: updated.prizeStatus,
   };

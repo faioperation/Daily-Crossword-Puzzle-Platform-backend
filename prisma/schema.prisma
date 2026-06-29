@@ -35,7 +35,6 @@ enum ClueDirection {
 
 enum WinnerStatus {
   PENDING
-  ANNOUNCED
   CLAIMED
 }
 
@@ -43,6 +42,16 @@ enum PrizeStatus {
   EMAIL_SENT
   ADDRESS_RECEIVED
   PRIZE_SHIPPED
+}
+
+enum WinnerType {
+  PUZZLE
+  ALTERNATE
+}
+
+enum SelectionType {
+  MANUAL
+  RANDOM
 }
 
 // ===============================
@@ -285,6 +294,8 @@ model PuzzleWinner {
   attemptId String @unique
 
   status WinnerStatus @default(PENDING)
+  winnerType WinnerType @default(PUZZLE)
+  selectionType SelectionType @default(RANDOM)
   prizeStatus PrizeStatus?
   reward String?
 
@@ -303,6 +314,8 @@ model PuzzleWinner {
 
   @@unique([puzzleId, userId])
   @@index([status])
+  @@index([winnerType])
+  @@index([selectionType])
   @@map("puzzle_winners")
 }
 
