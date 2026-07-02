@@ -70,7 +70,7 @@ const updatePuzzleSchema = z.object({
   }),
 });
 
-export const PuzzleCreateValidation = {
+export const PuzzleManagementValidation = {
   createPuzzleSchema,
   updatePuzzleSchema,
 };

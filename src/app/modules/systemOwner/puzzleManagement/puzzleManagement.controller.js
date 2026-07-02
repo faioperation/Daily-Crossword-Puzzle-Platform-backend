@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { PuzzleCreateService } from "./puzzleCreate.service.js";
+import { PuzzleManagementService } from "./puzzleManagement.service.js";
 import prisma from "../../../prisma/client.js";
 import DevBuildError from "../../../lib/DevBuildError.js";
 
@@ -19,13 +19,13 @@ const handleError = (res, error) => {
 
 const mapPuzzleResponse = (puzzle) => ({
   id: puzzle.id,
-  puzzleName: puzzle.title,
+  puzzleName: puzzle.title || puzzle.puzzleName,
   publishDate: puzzle.publishDate,
   difficulty: puzzle.difficulty.toLowerCase(),
   status: puzzle.status.toLowerCase(),
   dailyPrize: puzzle.dailyPrize,
-  row: puzzle.rows,
-  column: puzzle.columns,
+  row: puzzle.rows || puzzle.row,
+  column: puzzle.columns || puzzle.column,
   createdAt: puzzle.createdAt,
   updatedAt: puzzle.updatedAt,
 });
@@ -33,7 +33,7 @@ const mapPuzzleResponse = (puzzle) => ({
 const createPuzzle = async (req, res) => {
   try {
     const userId = req.user.id;
-    const result = await PuzzleCreateService.createPuzzle(
+    const result = await PuzzleManagementService.createPuzzle(
       prisma,
       userId,
       req.body,
@@ -51,12 +51,16 @@ const createPuzzle = async (req, res) => {
 
 const getAllPuzzles = async (req, res) => {
   try {
-    const result = await PuzzleCreateService.getAllPuzzles(prisma, req.query);
+    const result = await PuzzleManagementService.getAllPuzzles(
+      prisma,
+      req.query,
+    );
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Puzzles retrieved successfully",
+      stats: result.stats,
       meta: result.meta,
-      data: result.data.map(mapPuzzleResponse),
+      data: result.data,
     });
   } catch (error) {
     return handleError(res, error);
@@ -65,7 +69,7 @@ const getAllPuzzles = async (req, res) => {
 
 const getPuzzleById = async (req, res) => {
   try {
-    const result = await PuzzleCreateService.getPuzzleById(
+    const result = await PuzzleManagementService.getPuzzleById(
       prisma,
       req.params.id,
     );
@@ -81,7 +85,7 @@ const getPuzzleById = async (req, res) => {
 
 const updatePuzzle = async (req, res) => {
   try {
-    const result = await PuzzleCreateService.updatePuzzle(
+    const result = await PuzzleManagementService.updatePuzzle(
       prisma,
       req.params.id,
       req.body,
@@ -98,7 +102,7 @@ const updatePuzzle = async (req, res) => {
 
 const deletePuzzle = async (req, res) => {
   try {
-    const result = await PuzzleCreateService.deletePuzzle(
+    const result = await PuzzleManagementService.deletePuzzle(
       prisma,
       req.params.id,
     );
@@ -112,7 +116,7 @@ const deletePuzzle = async (req, res) => {
   }
 };
 
-export const PuzzleCreateController = {
+export const PuzzleManagementController = {
   createPuzzle,
   getAllPuzzles,
   getPuzzleById,

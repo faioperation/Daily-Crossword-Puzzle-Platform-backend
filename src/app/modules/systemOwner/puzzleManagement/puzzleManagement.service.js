@@ -1,0 +1,231 @@
+import { StatusCodes } from "http-status-codes";
+import DevBuildError from "../../../lib/DevBuildError.js";
+
+const createPuzzle = async (prisma, userId, payload) => {
+  const {
+    puzzleName,
+    publishDate,
+    difficulty,
+    status,
+    dailyPrize,
+    row,
+    column,
+  } = payload;
+
+  const newPuzzle = await prisma.puzzle.create({
+    data: {
+      title: puzzleName,
+      publishDate: publishDate ? new Date(publishDate) : null,
+      difficulty: difficulty.toUpperCase(),
+      status: status.toUpperCase(),
+      dailyPrize,
+      rows: row,
+      columns: column,
+      createdById: userId,
+    },
+  });
+
+  return newPuzzle;
+};
+
+const getAllPuzzles = async (prisma, query) => {
+  const {
+    search,
+    searchTerm,
+    searchParam,
+    status,
+    date,
+    publishDate,
+    page = 1,
+    limit = 10,
+  } = query;
+
+  const parsedPage = Number(page) || 1;
+  const parsedLimit = Number(limit) || 10;
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  // 1. Calculate dashboard statistics (global across all puzzles)
+  const [totalPuzzlesCount, publishedCount, draftCount] = await Promise.all([
+    prisma.puzzle.count(),
+    prisma.puzzle.count({ where: { status: "PUBLISHED" } }),
+    prisma.puzzle.count({ where: { status: "DRAFT" } }),
+  ]);
+
+  // 2. Build where filter for list query
+  const where = {};
+
+  if (status && status.toUpperCase() !== "ALL") {
+    where.status = status.toUpperCase();
+  }
+
+  const querySearch = search || searchTerm || searchParam;
+  if (querySearch) {
+    where.title = {
+      contains: querySearch,
+      mode: "insensitive",
+    };
+  }
+
+  const targetDateStr = date || publishDate;
+  if (targetDateStr) {
+    const targetDate = new Date(targetDateStr);
+    const startOfDay = new Date(targetDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    where.publishDate = {
+      gte: startOfDay,
+      lte: endOfDay,
+    };
+  }
+
+  // 3. Fetch list and count
+  const [puzzles, total] = await Promise.all([
+    prisma.puzzle.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: parsedLimit,
+    }),
+    prisma.puzzle.count({ where }),
+  ]);
+
+  // 4. Generate persistent chronological displayId (e.g. PZ-001)
+  const allPuzzlesOrdered = await prisma.puzzle.findMany({
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+
+  const idToSequenceMap = {};
+  allPuzzlesOrdered.forEach((p, idx) => {
+    idToSequenceMap[p.id] = idx + 1;
+  });
+
+  // 5. Map each puzzle with clues count and custom formatted fields
+  const mappedData = await Promise.all(
+    puzzles.map(async (puzzle) => {
+      // Calculate total clues: count of cells having a number
+      const totalClues = await prisma.puzzleCell.count({
+        where: {
+          puzzleId: puzzle.id,
+          number: { not: null },
+        },
+      });
+
+      const seq = idToSequenceMap[puzzle.id] || 1;
+      const displayId = `PZ-${String(seq).padStart(3, "0")}`;
+
+      return {
+        id: puzzle.id,
+        displayId,
+        puzzleName: puzzle.title,
+        title: puzzle.title,
+        publishDate: puzzle.publishDate
+          ? puzzle.publishDate.toISOString().split("T")[0]
+          : "-",
+        difficulty:
+          puzzle.difficulty.charAt(0) +
+          puzzle.difficulty.slice(1).toLowerCase(),
+        status: puzzle.status.charAt(0) + puzzle.status.slice(1).toLowerCase(),
+        dailyPrize: puzzle.dailyPrize,
+        row: puzzle.rows,
+        column: puzzle.columns,
+        totalClues,
+        createdAt: puzzle.createdAt,
+        updatedAt: puzzle.updatedAt,
+      };
+    }),
+  );
+
+  const meta = {
+    page: parsedPage,
+    limit: parsedLimit,
+    total,
+    totalPage: Math.ceil(total / parsedLimit),
+  };
+
+  return {
+    stats: {
+      totalPuzzles: totalPuzzlesCount,
+      publishedPuzzles: publishedCount,
+      draftPuzzles: draftCount,
+    },
+    meta,
+    data: mappedData,
+  };
+};
+
+const getPuzzleById = async (prisma, puzzleId) => {
+  const puzzle = await prisma.puzzle.findUnique({
+    where: { id: puzzleId },
+  });
+
+  if (!puzzle) {
+    throw new DevBuildError("Puzzle not found", StatusCodes.NOT_FOUND);
+  }
+
+  return puzzle;
+};
+
+const updatePuzzle = async (prisma, puzzleId, payload) => {
+  const puzzle = await prisma.puzzle.findUnique({
+    where: { id: puzzleId },
+  });
+
+  if (!puzzle) {
+    throw new DevBuildError("Puzzle not found", StatusCodes.NOT_FOUND);
+  }
+
+  const {
+    puzzleName,
+    publishDate,
+    difficulty,
+    status,
+    dailyPrize,
+    row,
+    column,
+  } = payload;
+
+  const updateData = {};
+  if (puzzleName !== undefined) updateData.title = puzzleName;
+  if (publishDate !== undefined)
+    updateData.publishDate = publishDate ? new Date(publishDate) : null;
+  if (difficulty !== undefined)
+    updateData.difficulty = difficulty.toUpperCase();
+  if (status !== undefined) updateData.status = status.toUpperCase();
+  if (dailyPrize !== undefined) updateData.dailyPrize = dailyPrize;
+  if (row !== undefined) updateData.rows = row;
+  if (column !== undefined) updateData.columns = column;
+
+  const updatedPuzzle = await prisma.puzzle.update({
+    where: { id: puzzleId },
+    data: updateData,
+  });
+
+  return updatedPuzzle;
+};
+
+const deletePuzzle = async (prisma, puzzleId) => {
+  const puzzle = await prisma.puzzle.findUnique({
+    where: { id: puzzleId },
+  });
+
+  if (!puzzle) {
+    throw new DevBuildError("Puzzle not found", StatusCodes.NOT_FOUND);
+  }
+
+  await prisma.puzzle.delete({
+    where: { id: puzzleId },
+  });
+
+  return puzzle;
+};
+
+export const PuzzleManagementService = {
+  createPuzzle,
+  getAllPuzzles,
+  getPuzzleById,
+  updatePuzzle,
+  deletePuzzle,
+};
