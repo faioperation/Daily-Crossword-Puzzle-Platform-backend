@@ -7,6 +7,7 @@ import { PuzzleCellRouter } from "../modules/systemOwner/puzzleChell/puzzleChell
 import { SettingsRouter } from "../modules/systemOwner/settings/settings.route.js";
 import { PrizeManagementRouter } from "../modules/systemOwner/prizeManagement/prizeManagement.route.js";
 import { WinnerHistoryRouter } from "../modules/systemOwner/winnerHistory/winnerHistory.route.js";
+import { DrawWinnerRouter } from "../modules/systemOwner/drawWinner/drawWinner.route.js";
 
 export const router = Router();
 const moduleRoutes = [
@@ -41,6 +42,10 @@ const moduleRoutes = [
   {
     path: "/system-owner/winner-history",
     route: WinnerHistoryRouter,
+  },
+  {
+    path: "/system-owner/draw-winner",
+    route: DrawWinnerRouter,
   },
 ];
 
