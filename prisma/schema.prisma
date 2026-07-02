@@ -54,6 +54,12 @@ enum SelectionType {
   RANDOM
 }
 
+enum EntriesType {
+  ELIGIBLE
+  DISQUALIFIED
+  WINNER
+}
+
 // ===============================
 // USER
 // ===============================
@@ -224,6 +230,8 @@ model PuzzleAttempt {
   durationSeconds Int?
 
   completed Boolean @default(false)
+
+  status EntriesType @default(ELIGIBLE)
 
   score Int @default(0)
 

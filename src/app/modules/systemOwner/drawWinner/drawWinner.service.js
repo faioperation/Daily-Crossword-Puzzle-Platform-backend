@@ -144,7 +144,7 @@ const getEligibleEntries = async (prisma, query) => {
     puzzleId: puzzle.id,
     userId: { not: null },
     isTester: false,
-    winner: null,
+    status: "ELIGIBLE",
   };
 
   if (type === "PUZZLE") {
@@ -243,7 +243,7 @@ const getRandomEligibleEntry = async (prisma, query) => {
       puzzleId: puzzle.id,
       userId: { not: null },
       isTester: false,
-      winner: null,
+      status: "ELIGIBLE",
       completed: targetWinnerType === "PUZZLE" ? true : undefined,
     },
     include: {
@@ -283,7 +283,7 @@ const getRandomEligibleEntry = async (prisma, query) => {
 
   return {
     id: chosen.id,
-    displayId: `ENT-${chosen.id.slice(-4).toUpperCase()}`,
+    // displayId: `ENT-${chosen.id.slice(-4).toUpperCase()}`,
     participant: {
       id: chosen.user.id,
       name: chosen.user.name,
@@ -315,8 +315,8 @@ const drawRandomWinner = async (prisma, payload) => {
     throw new DevBuildError("Cannot select an anonymous attempt as winner", StatusCodes.BAD_REQUEST);
   }
 
-  if (attempt.winner) {
-    throw new DevBuildError("This entry has already been selected as a winner", StatusCodes.BAD_REQUEST);
+  if (attempt.status !== "ELIGIBLE") {
+    throw new DevBuildError("This entry is not eligible (already a winner or disqualified)", StatusCodes.BAD_REQUEST);
   }
 
   const puzzle = await prisma.puzzle.findUnique({
@@ -375,6 +375,11 @@ const drawRandomWinner = async (prisma, payload) => {
       });
     }
 
+    await tx.puzzleAttempt.update({
+      where: { id: attempt.id },
+      data: { status: "WINNER" },
+    });
+
     return createdWinner;
   });
 
@@ -401,8 +406,8 @@ const drawManualWinner = async (prisma, payload) => {
     throw new DevBuildError("Cannot select an anonymous attempt as winner", StatusCodes.BAD_REQUEST);
   }
 
-  if (attempt.winner) {
-    throw new DevBuildError("This entry has already been selected as a winner", StatusCodes.BAD_REQUEST);
+  if (attempt.status !== "ELIGIBLE") {
+    throw new DevBuildError("This entry is not eligible (already a winner or disqualified)", StatusCodes.BAD_REQUEST);
   }
 
   const puzzle = await prisma.puzzle.findUnique({
@@ -459,6 +464,11 @@ const drawManualWinner = async (prisma, payload) => {
         },
       });
     }
+
+    await tx.puzzleAttempt.update({
+      where: { id: attempt.id },
+      data: { status: "WINNER" },
+    });
 
     return createdWinner;
   });

@@ -8,6 +8,7 @@ import { SettingsRouter } from "../modules/systemOwner/settings/settings.route.j
 import { PrizeManagementRouter } from "../modules/systemOwner/prizeManagement/prizeManagement.route.js";
 import { WinnerHistoryRouter } from "../modules/systemOwner/winnerHistory/winnerHistory.route.js";
 import { DrawWinnerRouter } from "../modules/systemOwner/drawWinner/drawWinner.route.js";
+import { EntriesRouter } from "../modules/systemOwner/entries/entries.route.js";
 
 export const router = Router();
 const moduleRoutes = [
@@ -46,6 +47,10 @@ const moduleRoutes = [
   {
     path: "/system-owner/draw-winner",
     route: DrawWinnerRouter,
+  },
+  {
+    path: "/system-owner/entries",
+    route: EntriesRouter,
   },
 ];
 
