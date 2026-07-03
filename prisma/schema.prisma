@@ -208,6 +208,7 @@ model Puzzle {
 
 model PuzzleAttempt {
   id String @id @default(uuid())
+  displayId String? @unique
 
   puzzleId String
   userId   String?
@@ -249,7 +250,7 @@ model PuzzleAttempt {
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  answers PuzzleAnswer[]
+  answers PuzzleAnswer?
 
   winner PuzzleWinner?
 
@@ -268,25 +269,14 @@ model PuzzleAttempt {
 // ===============================
 
 model PuzzleAnswer {
-  id String @id @default(uuid())
-
-  attemptId String
-
-  row Int
-
-  column Int
-
-  enteredLetter String?
-
-  isCorrect Boolean @default(false)
-
+  id        String   @id @default(uuid())
+  attemptId String   @unique
+  answers   Json?
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
-  attempt PuzzleAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  attempt   PuzzleAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
 
-  @@unique([attemptId, row, column])
-  @@index([attemptId])
   @@map("puzzle_answers")
 }
 

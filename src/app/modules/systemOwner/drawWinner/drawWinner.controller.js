@@ -33,19 +33,6 @@ const getEligibleEntries = async (req, res) => {
   }
 };
 
-const getRandomEligibleEntry = async (req, res) => {
-  try {
-    const result = await DrawWinnerService.getRandomEligibleEntry(prisma, req.query);
-    return res.status(StatusCodes.OK).json({
-      success: true,
-      message: "Random eligible entry retrieved successfully",
-      data: result,
-    });
-  } catch (error) {
-    return handleError(res, error);
-  }
-};
-
 const drawRandomWinner = async (req, res) => {
   try {
     const result = await DrawWinnerService.drawRandomWinner(prisma, req.body);
@@ -74,7 +61,6 @@ const drawManualWinner = async (req, res) => {
 
 export const DrawWinnerController = {
   getEligibleEntries,
-  getRandomEligibleEntry,
   drawRandomWinner,
   drawManualWinner,
 };

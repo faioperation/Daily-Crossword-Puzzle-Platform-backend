@@ -71,9 +71,19 @@ const updatePrizeStatus = async (prisma, id, prizeStatus) => {
     throw new DevBuildError("Winner record not found", StatusCodes.NOT_FOUND);
   }
 
+  const updateData = { prizeStatus };
+
+  if (prizeStatus === "PRIZE_SHIPPED") {
+    updateData.status = "CLAIMED";
+    updateData.claimedAt = new Date();
+  } else {
+    updateData.status = "PENDING";
+    updateData.claimedAt = null;
+  }
+
   const updated = await prisma.puzzleWinner.update({
     where: { id },
-    data: { prizeStatus },
+    data: updateData,
     include: {
       user: {
         select: {

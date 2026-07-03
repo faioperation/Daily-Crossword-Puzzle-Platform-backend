@@ -10,30 +10,20 @@ const getEligibleEntriesSchema = z.object({
   }),
 });
 
-const getRandomEligibleEntrySchema = z.object({
-  query: z.object({
-    puzzleId: z.string().uuid("puzzleId must be a valid UUID").optional(),
-    winnerType: z.enum(["PUZZLE", "ALTERNATE"]).optional(),
-  }),
-});
-
 const drawRandomWinnerSchema = z.object({
   body: z.object({
-    puzzleId: z.string({ required_error: "puzzleId is required" }).uuid("puzzleId must be a valid UUID"),
     attemptId: z.string({ required_error: "attemptId is required" }).uuid("attemptId must be a valid UUID"),
   }),
 });
 
 const drawManualWinnerSchema = z.object({
   body: z.object({
-    puzzleId: z.string({ required_error: "puzzleId is required" }).uuid("puzzleId must be a valid UUID"),
     attemptId: z.string({ required_error: "attemptId is required" }).uuid("attemptId must be a valid UUID"),
   }),
 });
 
 export const DrawWinnerValidation = {
   getEligibleEntriesSchema,
-  getRandomEligibleEntrySchema,
   drawRandomWinnerSchema,
   drawManualWinnerSchema,
 };

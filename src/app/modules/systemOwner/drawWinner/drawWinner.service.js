@@ -199,7 +199,7 @@ const getEligibleEntries = async (prisma, query) => {
 
   const mappedData = attempts.map((item) => ({
     id: item.id,
-    displayId: `ENT-${item.id.slice(-4).toUpperCase()}`,
+    displayId: item.displayId || `ENT-${item.id.slice(-4).toUpperCase()}`,
     participant: {
       id: item.user.id,
       name: item.user.name,
@@ -224,79 +224,8 @@ const getEligibleEntries = async (prisma, query) => {
   };
 };
 
-const getRandomEligibleEntry = async (prisma, query) => {
-  const { puzzleId, winnerType } = query;
-  const puzzle = await getActivePuzzle(prisma, puzzleId);
-
-  // Determine target winner type: PUZZLE if no PUZZLE winner exists, otherwise ALTERNATE
-  let targetWinnerType = winnerType;
-  if (!targetWinnerType) {
-    const existingPuzzleWinner = await prisma.puzzleWinner.findFirst({
-      where: { puzzleId: puzzle.id, winnerType: "PUZZLE" },
-    });
-    targetWinnerType = existingPuzzleWinner ? "ALTERNATE" : "PUZZLE";
-  }
-
-  // Fetch eligible candidates
-  const eligibleAttempts = await prisma.puzzleAttempt.findMany({
-    where: {
-      puzzleId: puzzle.id,
-      userId: { not: null },
-      isTester: false,
-      status: "ELIGIBLE",
-      completed: targetWinnerType === "PUZZLE" ? true : undefined,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-    },
-  });
-
-  if (eligibleAttempts.length === 0) {
-    throw new DevBuildError(
-      `No eligible entries found for drawing a ${targetWinnerType} winner.`,
-      StatusCodes.BAD_REQUEST
-    );
-  }
-
-  const randomIndex = Math.floor(Math.random() * eligibleAttempts.length);
-  const chosen = eligibleAttempts[randomIndex];
-
-  const formatDuration = (seconds) => {
-    if (seconds === null || seconds === undefined) return "-";
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    const pad = (num) => String(num).padStart(2, "0");
-    
-    if (hrs > 0) {
-      return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
-    }
-    return `${pad(mins)}:${pad(secs)}`;
-  };
-
-  return {
-    id: chosen.id,
-    // displayId: `ENT-${chosen.id.slice(-4).toUpperCase()}`,
-    participant: {
-      id: chosen.user.id,
-      name: chosen.user.name,
-      email: chosen.user.email,
-    },
-    type: chosen.completed ? "Puzzle" : "Alternate",
-    solveTime: chosen.completed ? formatDuration(chosen.durationSeconds) : "-",
-    winnerType: targetWinnerType
-  };
-};
-
 const drawRandomWinner = async (prisma, payload) => {
-  const { puzzleId, attemptId } = payload;
+  const { attemptId } = payload;
 
   const attempt = await prisma.puzzleAttempt.findUnique({
     where: { id: attemptId },
@@ -307,9 +236,7 @@ const drawRandomWinner = async (prisma, payload) => {
     throw new DevBuildError("Attempt not found", StatusCodes.NOT_FOUND);
   }
 
-  if (attempt.puzzleId !== puzzleId) {
-    throw new DevBuildError("Attempt does not belong to this puzzle", StatusCodes.BAD_REQUEST);
-  }
+  const puzzleId = attempt.puzzleId;
 
   if (!attempt.userId) {
     throw new DevBuildError("Cannot select an anonymous attempt as winner", StatusCodes.BAD_REQUEST);
@@ -387,7 +314,7 @@ const drawRandomWinner = async (prisma, payload) => {
 };
 
 const drawManualWinner = async (prisma, payload) => {
-  const { puzzleId, attemptId } = payload;
+  const { attemptId } = payload;
   
   const attempt = await prisma.puzzleAttempt.findUnique({
     where: { id: attemptId },
@@ -398,9 +325,7 @@ const drawManualWinner = async (prisma, payload) => {
     throw new DevBuildError("Attempt not found", StatusCodes.NOT_FOUND);
   }
 
-  if (attempt.puzzleId !== puzzleId) {
-    throw new DevBuildError("Attempt does not belong to this puzzle", StatusCodes.BAD_REQUEST);
-  }
+  const puzzleId = attempt.puzzleId;
 
   if (!attempt.userId) {
     throw new DevBuildError("Cannot select an anonymous attempt as winner", StatusCodes.BAD_REQUEST);
@@ -479,7 +404,6 @@ const drawManualWinner = async (prisma, payload) => {
 export const DrawWinnerService = {
   getStats,
   getEligibleEntries,
-  getRandomEligibleEntry,
   drawRandomWinner,
   drawManualWinner,
 };

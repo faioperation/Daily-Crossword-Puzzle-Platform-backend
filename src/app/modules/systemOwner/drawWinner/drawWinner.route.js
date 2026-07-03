@@ -15,12 +15,6 @@ router.get(
   DrawWinnerController.getEligibleEntries,
 );
 
-router.get(
-  "/random-eligible-entry",
-  validateRequest(DrawWinnerValidation.getRandomEligibleEntrySchema),
-  DrawWinnerController.getRandomEligibleEntry,
-);
-
 router.post(
   "/draw-random",
   validateRequest(DrawWinnerValidation.drawRandomWinnerSchema),
