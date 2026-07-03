@@ -131,9 +131,11 @@ model Puzzle {
 
   // Relations
   createdBy User        @relation("PuzzleCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
-  cells     PuzzleCell[]
   attempts  PuzzleAttempt[]
   winners   PuzzleWinner[]
+
+  cells Json?
+  clues Json?
 
   @@index([status])
   @@index([publishDate])
@@ -142,30 +144,30 @@ model Puzzle {
 }
 
 // ===============================
-// PUZZLE CELL
+// PUZZLE CELL (Commented out)
 // ===============================
 
-model PuzzleCell {
-  id String @id @default(uuid())
-
-  puzzleId String
-  puzzle   Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
-
-  row    Int
-  column Int
-
-  letter  String?
-  isBlack Boolean @default(false)
-
-  number Int?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([puzzleId, row, column])
-  @@index([puzzleId])
-  @@map("puzzle_cells")
-}
+// model PuzzleCell {
+//   id String @id @default(uuid())
+// 
+//   puzzleId String
+//   puzzle   Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+// 
+//   row    Int
+//   column Int
+// 
+//   letter  String?
+//   isBlack Boolean @default(false)
+// 
+//   number Int?
+// 
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// 
+//   @@unique([puzzleId, row, column])
+//   @@index([puzzleId])
+//   @@map("puzzle_cells")
+// }
 
 // // ===============================
 // // PUZZLE CLUE

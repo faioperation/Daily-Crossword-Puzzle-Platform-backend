@@ -64,3 +64,9 @@ export const uploadSettingsLogo = createMulterUpload({
   maxSize: 2 * 1024 * 1024,
 });
 
+export const uploadAvatar = createMulterUpload({
+  folder: "avatars",
+  allowedTypes: /jpeg|jpg|png|webp/,
+  maxSize: 2 * 1024 * 1024,
+});
+

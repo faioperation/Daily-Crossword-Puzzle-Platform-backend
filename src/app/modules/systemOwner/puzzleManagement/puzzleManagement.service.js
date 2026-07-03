@@ -3,24 +3,27 @@ import DevBuildError from "../../../lib/DevBuildError.js";
 
 const createPuzzle = async (prisma, userId, payload) => {
   const {
-    puzzleName,
-    publishDate,
+    title,
+    date,
     difficulty,
     status,
-    dailyPrize,
-    row,
-    column,
+    prize,
+    size,
+    grid,
+    clues,
   } = payload;
 
   const newPuzzle = await prisma.puzzle.create({
     data: {
-      title: puzzleName,
-      publishDate: publishDate ? new Date(publishDate) : null,
+      title,
+      publishDate: date ? new Date(date) : null,
       difficulty: difficulty.toUpperCase(),
       status: status.toUpperCase(),
-      dailyPrize,
-      rows: row,
-      columns: column,
+      dailyPrize: prize,
+      rows: size,
+      columns: size,
+      cells: grid,
+      clues: clues,
       createdById: userId,
     },
   });
@@ -105,13 +108,7 @@ const getAllPuzzles = async (prisma, query) => {
   // 5. Map each puzzle with clues count and custom formatted fields
   const mappedData = await Promise.all(
     puzzles.map(async (puzzle) => {
-      // Calculate total clues: count of cells having a number
-      const totalClues = await prisma.puzzleCell.count({
-        where: {
-          puzzleId: puzzle.id,
-          number: { not: null },
-        },
-      });
+      const totalClues = Array.isArray(puzzle.clues) ? puzzle.clues.length : 0;
 
       const seq = idToSequenceMap[puzzle.id] || 1;
       const displayId = `PZ-${String(seq).padStart(3, "0")}`;
@@ -178,25 +175,30 @@ const updatePuzzle = async (prisma, puzzleId, payload) => {
   }
 
   const {
-    puzzleName,
-    publishDate,
+    title,
+    date,
     difficulty,
     status,
-    dailyPrize,
-    row,
-    column,
+    prize,
+    size,
+    grid,
+    clues,
   } = payload;
 
   const updateData = {};
-  if (puzzleName !== undefined) updateData.title = puzzleName;
-  if (publishDate !== undefined)
-    updateData.publishDate = publishDate ? new Date(publishDate) : null;
+  if (title !== undefined) updateData.title = title;
+  if (date !== undefined)
+    updateData.publishDate = date ? new Date(date) : null;
   if (difficulty !== undefined)
     updateData.difficulty = difficulty.toUpperCase();
   if (status !== undefined) updateData.status = status.toUpperCase();
-  if (dailyPrize !== undefined) updateData.dailyPrize = dailyPrize;
-  if (row !== undefined) updateData.rows = row;
-  if (column !== undefined) updateData.columns = column;
+  if (prize !== undefined) updateData.dailyPrize = prize;
+  if (size !== undefined) {
+    updateData.rows = size;
+    updateData.columns = size;
+  }
+  if (grid !== undefined) updateData.cells = grid;
+  if (clues !== undefined) updateData.clues = clues;
 
   const updatedPuzzle = await prisma.puzzle.update({
     where: { id: puzzleId },

@@ -3,7 +3,6 @@ import { OtpRouter } from "../modules/otp/otp.route.js";
 import { AuthRouter } from "../modules/auth/auth.route.js";
 import { UsersRouter } from "../modules/users/users.route.js";
 import { PuzzleManagementRouter } from "../modules/systemOwner/puzzleManagement/puzzleManagement.route.js";
-import { PuzzleCellRouter } from "../modules/systemOwner/puzzleChell/puzzleChell.route.js";
 import { SettingsRouter } from "../modules/systemOwner/settings/settings.route.js";
 import { PrizeManagementRouter } from "../modules/systemOwner/prizeManagement/prizeManagement.route.js";
 import { WinnerHistoryRouter } from "../modules/systemOwner/winnerHistory/winnerHistory.route.js";
@@ -28,10 +27,7 @@ const moduleRoutes = [
     path: "/system-owner/puzzle",
     route: PuzzleManagementRouter,
   },
-  {
-    path: "/system-owner/puzzle/cells",
-    route: PuzzleCellRouter,
-  },
+
   {
     path: "/system-owner/settings",
     route: SettingsRouter,

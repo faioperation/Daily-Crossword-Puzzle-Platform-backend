@@ -7,6 +7,14 @@ const updateSettingsSchema = z.object({
   }),
 });
 
+const updateAdminProfileSchema = z.object({
+  body: z.object({
+    name: z.string().min(1, "Name cannot be empty").optional(),
+    email: z.string().optional(),
+  }),
+});
+
 export const SettingsValidation = {
   updateSettingsSchema,
+  updateAdminProfileSchema,
 };

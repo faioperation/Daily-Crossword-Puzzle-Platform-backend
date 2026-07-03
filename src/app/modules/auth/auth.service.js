@@ -199,6 +199,36 @@ const changePassword = async (prisma, userId, currentPassword, newPassword) => {
   });
 };
 
+const signup = async (prisma, payload) => {
+  const { fullname, email, password } = payload;
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (existingUser) {
+    throw new DevBuildError(
+      "User already exists with this email",
+      StatusCodes.CONFLICT,
+    );
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  const user = await prisma.user.create({
+    data: {
+      name: fullname,
+      email,
+      password: hashedPassword,
+      role: "USER",
+      isActive: true,
+      isVerified: false,
+    },
+  });
+
+  return { user };
+};
+
 export const AuthService = {
   login,
   refreshAccessToken,
@@ -206,4 +236,5 @@ export const AuthService = {
   verifyForgotPasswordOtp,
   resetPassword,
   changePassword,
+  signup,
 };

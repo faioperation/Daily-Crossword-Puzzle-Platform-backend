@@ -46,7 +46,32 @@ const updateSettings = async (prisma, payload) => {
   return settings;
 };
 
+const updateAdminProfile = async (prisma, userId, payload) => {
+  const { name, avatar } = payload;
+
+  const updateData = {};
+  if (name !== undefined) updateData.name = name;
+  if (avatar !== undefined) updateData.avatar = avatar;
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: updateData,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      avatar: true,
+      role: true,
+      isActive: true,
+      isVerified: true,
+    },
+  });
+
+  return updatedUser;
+};
+
 export const SettingsService = {
   getSettings,
   updateSettings,
+  updateAdminProfile,
 };

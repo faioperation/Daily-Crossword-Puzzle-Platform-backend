@@ -54,7 +54,30 @@ const updateSettings = async (req, res) => {
   }
 };
 
+const updateAdminProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const payload = { ...req.body };
+    if (req.file) {
+      payload.avatar = `/uploads/avatars/${req.file.filename}`;
+    }
+    const result = await SettingsService.updateAdminProfile(
+      prisma,
+      userId,
+      payload,
+    );
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Admin profile updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 export const SettingsController = {
   getSettings,
   updateSettings,
+  updateAdminProfile,
 };

@@ -19,13 +19,20 @@ const handleError = (res, error) => {
 
 const mapPuzzleResponse = (puzzle) => ({
   id: puzzle.id,
-  puzzleName: puzzle.title || puzzle.puzzleName,
-  publishDate: puzzle.publishDate,
-  difficulty: puzzle.difficulty.toLowerCase(),
-  status: puzzle.status.toLowerCase(),
-  dailyPrize: puzzle.dailyPrize,
-  row: puzzle.rows || puzzle.row,
-  column: puzzle.columns || puzzle.column,
+  title: puzzle.title,
+  date: puzzle.publishDate
+    ? puzzle.publishDate.toISOString().split("T")[0]
+    : null,
+  difficulty:
+    puzzle.difficulty.charAt(0).toUpperCase() +
+    puzzle.difficulty.slice(1).toLowerCase(),
+  status:
+    puzzle.status.charAt(0).toUpperCase() +
+    puzzle.status.slice(1).toLowerCase(),
+  prize: puzzle.dailyPrize,
+  size: puzzle.rows,
+  grid: puzzle.cells,
+  clues: puzzle.clues,
   createdAt: puzzle.createdAt,
   updatedAt: puzzle.updatedAt,
 });

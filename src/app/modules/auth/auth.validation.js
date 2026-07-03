@@ -70,6 +70,26 @@ const changePasswordSchema = z.object({
   }),
 });
 
+const signupSchema = z.object({
+  body: z
+    .object({
+      fullname: z.string({ required_error: "Full name is required" }),
+      email: z
+        .string({ required_error: "Email is required" })
+        .email("Invalid email address"),
+      password: z
+        .string({ required_error: "Password is required" })
+        .min(6, "Password must be at least 6 characters"),
+      confirmPassword: z.string({
+        required_error: "Confirm password is required",
+      }),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    }),
+});
+
 export const AuthValidation = {
   sendOtpSchema,
   verifyOtpSchema,
@@ -78,4 +98,5 @@ export const AuthValidation = {
   verifyForgotPasswordOtpSchema,
   resetPasswordSchema,
   changePasswordSchema,
+  signupSchema,
 };
