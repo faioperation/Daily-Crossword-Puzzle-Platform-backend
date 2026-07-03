@@ -14,19 +14,19 @@ router.get("/active-puzzle", HomeController.getActivePuzzle);
 router.post(
   "/start-attempt",
   validateRequest(HomeValidation.startAttemptSchema),
-  HomeController.startAttempt
+  HomeController.startAttempt,
 );
 
 router.post(
   "/check-attempt",
   validateRequest(HomeValidation.checkAttemptSchema),
-  HomeController.checkAttempt
+  HomeController.checkAttempt,
 );
 
 router.post(
   "/submit-attempt",
   validateRequest(HomeValidation.submitAttemptSchema),
-  HomeController.submitAttempt
+  HomeController.submitAttempt,
 );
 
 export const HomeRouter = router;

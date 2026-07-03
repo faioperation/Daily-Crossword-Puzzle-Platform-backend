@@ -28,7 +28,8 @@ const parseUserAgent = (uaString) => {
   else if (uaString.includes("Edge")) browser = "Edge";
 
   if (uaString.includes("Windows")) os = "Windows";
-  else if (uaString.includes("Macintosh") || uaString.includes("Mac OS")) os = "macOS";
+  else if (uaString.includes("Macintosh") || uaString.includes("Mac OS"))
+    os = "macOS";
   else if (uaString.includes("iPhone") || uaString.includes("iPad")) os = "iOS";
   else if (uaString.includes("Android")) os = "Android";
 
@@ -64,7 +65,11 @@ const startAttempt = async (req, res) => {
       os,
     };
 
-    const attempt = await HomeService.startAttempt(prisma, userId, devicePayload);
+    const attempt = await HomeService.startAttempt(
+      prisma,
+      userId,
+      devicePayload,
+    );
     return res.status(StatusCodes.CREATED).json({
       success: true,
       message: "Attempt started or resumed successfully",

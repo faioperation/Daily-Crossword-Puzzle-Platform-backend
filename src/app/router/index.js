@@ -8,6 +8,7 @@ import { WinnerHistoryRouter } from "../modules/systemOwner/winnerHistory/winner
 import { DrawWinnerRouter } from "../modules/systemOwner/drawWinner/drawWinner.route.js";
 import { EntriesRouter } from "../modules/systemOwner/entries/entries.route.js";
 import { HomeRouter } from "../modules/users/home/home.route.js";
+import { DashboardRouter } from "../modules/systemOwner/dashboard/dashboard.route.js";
 
 export const router = Router();
 const moduleRoutes = [
@@ -15,10 +16,12 @@ const moduleRoutes = [
     path: "/otp",
     route: OtpRouter,
   },
+
   {
     path: "/auth",
     route: AuthRouter,
   },
+
   {
     path: "/users/home",
     route: HomeRouter,
@@ -33,21 +36,30 @@ const moduleRoutes = [
     path: "/system-owner/settings",
     route: SettingsRouter,
   },
+
   {
     path: "/system-owner/prize-management",
     route: PrizeManagementRouter,
   },
+
   {
     path: "/system-owner/winner-history",
     route: WinnerHistoryRouter,
   },
+
   {
     path: "/system-owner/draw-winner",
     route: DrawWinnerRouter,
   },
+
   {
     path: "/system-owner/entries",
     route: EntriesRouter,
+  },
+
+  {
+    path: "/system-owner/dashboard",
+    route: DashboardRouter,
   },
 ];
 

@@ -25,7 +25,7 @@ const getWinnerHistory = async (prisma, query) => {
     startOfDay.setUTCHours(0, 0, 0, 0);
     const endOfDay = new Date(dateVal);
     endOfDay.setUTCHours(23, 59, 59, 999);
-    
+
     queryBuilder.where.announcedAt = {
       gte: startOfDay,
       lte: endOfDay,
@@ -57,8 +57,8 @@ const getWinnerHistory = async (prisma, query) => {
     winnerName: item.user.name,
     winnerEmail: item.user.email,
     type: formatEnumString(item.winnerType),
-    winnerDate: item.announcedAt 
-      ? item.announcedAt.toISOString().split("T")[0] 
+    winnerDate: item.announcedAt
+      ? item.announcedAt.toISOString().split("T")[0]
       : item.createdAt.toISOString().split("T")[0],
     selection: formatEnumString(item.selectionType),
     status: formatEnumString(item.status),
@@ -67,7 +67,6 @@ const getWinnerHistory = async (prisma, query) => {
 
   return { meta, data: mappedData };
 };
-
 
 const getWinnerById = async (prisma, id) => {
   const item = await prisma.puzzleWinner.findUnique({
@@ -92,7 +91,7 @@ const getWinnerById = async (prisma, id) => {
     throw new DevBuildError("Winner record not found", StatusCodes.NOT_FOUND);
   }
 
-  const submissionDate = item.attempt.completedAt 
+  const submissionDate = item.attempt.completedAt
     ? item.attempt.completedAt.toISOString().split("T")[0]
     : item.attempt.createdAt.toISOString().split("T")[0];
 
@@ -105,8 +104,8 @@ const getWinnerById = async (prisma, id) => {
     type: formatEnumString(item.winnerType),
     selection: formatEnumString(item.selectionType),
     submissionDate,
-    winnerDate: item.announcedAt 
-      ? item.announcedAt.toISOString().split("T")[0] 
+    winnerDate: item.announcedAt
+      ? item.announcedAt.toISOString().split("T")[0]
       : item.createdAt.toISOString().split("T")[0],
     status: formatEnumString(item.status),
   };

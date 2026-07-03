@@ -19,7 +19,10 @@ const handleError = (res, error) => {
 
 const getWinnerHistory = async (req, res) => {
   try {
-    const result = await WinnerHistoryService.getWinnerHistory(prisma, req.query);
+    const result = await WinnerHistoryService.getWinnerHistory(
+      prisma,
+      req.query,
+    );
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Winner history retrieved successfully",

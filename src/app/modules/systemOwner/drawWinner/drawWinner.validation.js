@@ -12,13 +12,17 @@ const getEligibleEntriesSchema = z.object({
 
 const drawRandomWinnerSchema = z.object({
   body: z.object({
-    attemptId: z.string({ required_error: "attemptId is required" }).uuid("attemptId must be a valid UUID"),
+    attemptId: z
+      .string({ required_error: "attemptId is required" })
+      .uuid("attemptId must be a valid UUID"),
   }),
 });
 
 const drawManualWinnerSchema = z.object({
   body: z.object({
-    attemptId: z.string({ required_error: "attemptId is required" }).uuid("attemptId must be a valid UUID"),
+    attemptId: z
+      .string({ required_error: "attemptId is required" })
+      .uuid("attemptId must be a valid UUID"),
   }),
 });
 

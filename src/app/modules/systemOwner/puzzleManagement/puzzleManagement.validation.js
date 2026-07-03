@@ -95,7 +95,11 @@ const updatePuzzleSchema = z.object({
       ])
       .optional(),
     prize: z.string().min(1, "prize cannot be empty").optional(),
-    size: z.number().int().positive("size must be a positive integer").optional(),
+    size: z
+      .number()
+      .int()
+      .positive("size must be a positive integer")
+      .optional(),
     grid: z.array(z.array(cellSchema)).optional(),
     clues: z.array(clueSchema).optional(),
   }),

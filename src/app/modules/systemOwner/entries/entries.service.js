@@ -15,39 +15,36 @@ const getEntries = async (prisma, query) => {
   const endOfToday = new Date(today);
   endOfToday.setUTCHours(23, 59, 59, 999);
 
-  const [
-    todayEntriesCount,
-    puzzleEntriesCount,
-    alternateEntriesCount,
-  ] = await Promise.all([
-    // Today's entries
-    prisma.puzzleAttempt.count({
-      where: {
-        createdAt: {
-          gte: startOfToday,
-          lte: endOfToday,
+  const [todayEntriesCount, puzzleEntriesCount, alternateEntriesCount] =
+    await Promise.all([
+      // Today's entries
+      prisma.puzzleAttempt.count({
+        where: {
+          createdAt: {
+            gte: startOfToday,
+            lte: endOfToday,
+          },
+          userId: { not: null },
+          isTester: false,
         },
-        userId: { not: null },
-        isTester: false,
-      },
-    }),
-    // Puzzle entries (completed = true)
-    prisma.puzzleAttempt.count({
-      where: {
-        completed: true,
-        userId: { not: null },
-        isTester: false,
-      },
-    }),
-    // Alternate entries (completed = false)
-    prisma.puzzleAttempt.count({
-      where: {
-        completed: false,
-        userId: { not: null },
-        isTester: false,
-      },
-    }),
-  ]);
+      }),
+      // Puzzle entries (completed = true)
+      prisma.puzzleAttempt.count({
+        where: {
+          completed: true,
+          userId: { not: null },
+          isTester: false,
+        },
+      }),
+      // Alternate entries (completed = false)
+      prisma.puzzleAttempt.count({
+        where: {
+          completed: false,
+          userId: { not: null },
+          isTester: false,
+        },
+      }),
+    ]);
 
   // 2. Build where filter for list query
   const where = {

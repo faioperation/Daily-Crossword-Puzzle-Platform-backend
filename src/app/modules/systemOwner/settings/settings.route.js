@@ -3,7 +3,10 @@ import { SettingsController } from "./settings.controller.js";
 import { SettingsValidation } from "./settings.validation.js";
 import validateRequest from "../../../middleware/validateRequest.js";
 import { checkAuthMiddleware } from "../../../middleware/checkAuthMiddleware.js";
-import { uploadSettingsLogo, uploadAvatar } from "../../../config/multer.config.js";
+import {
+  uploadSettingsLogo,
+  uploadAvatar,
+} from "../../../config/multer.config.js";
 import { Role } from "../../../utils/role.js";
 
 const router = Router();

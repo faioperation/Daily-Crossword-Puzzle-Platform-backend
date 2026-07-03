@@ -52,7 +52,6 @@ passport.use(
   ),
 );
 
-
 // Optional: Serialize/Deserialize if sessions are used (not strictly needed for JWT but good to have)
 passport.serializeUser((user, done) => {
   done(null, user.id);

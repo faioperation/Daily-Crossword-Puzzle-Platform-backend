@@ -32,7 +32,10 @@ const getActivePuzzle = async (prisma, userId) => {
   }
 
   if (!puzzle) {
-    throw new DevBuildError("No active puzzle available today.", StatusCodes.NOT_FOUND);
+    throw new DevBuildError(
+      "No active puzzle available today.",
+      StatusCodes.NOT_FOUND,
+    );
   }
 
   // 2. Fetch the user's attempt for this puzzle if a userId is provided
@@ -64,7 +67,7 @@ const getActivePuzzle = async (prisma, userId) => {
               return { isBlack: true, letter: "", clueNum: null };
             }
             return { isBlack: false, clueNum: cell.clueNum, letter: "" };
-          })
+          }),
         )
       : [];
 
@@ -114,7 +117,8 @@ const getActivePuzzle = async (prisma, userId) => {
 };
 
 const startAttempt = async (prisma, userId, devicePayload) => {
-  const { deviceId, fingerprint, ipAddress, userAgent, browser, os } = devicePayload;
+  const { deviceId, fingerprint, ipAddress, userAgent, browser, os } =
+    devicePayload;
 
   // Resolve today's active puzzle
   const activePuzzleData = await getActivePuzzle(prisma, null);
@@ -162,7 +166,10 @@ const checkAttempt = async (prisma, userId, payload) => {
   });
 
   if (!attempt || attempt.userId !== userId) {
-    throw new DevBuildError("Attempt not found or access denied", StatusCodes.NOT_FOUND);
+    throw new DevBuildError(
+      "Attempt not found or access denied",
+      StatusCodes.NOT_FOUND,
+    );
   }
 
   const puzzle = await prisma.puzzle.findUnique({
@@ -182,12 +189,15 @@ const checkAttempt = async (prisma, userId, payload) => {
     for (let c = 0; c < correctCells[r].length; c++) {
       const correctCell = correctCells[r][c];
       const userCellLetter =
-        filledCells && filledCells[r] && filledCells[r][c] ? filledCells[r][c] : "";
+        filledCells && filledCells[r] && filledCells[r][c]
+          ? filledCells[r][c]
+          : "";
 
       if (correctCell.isBlack) {
         rowFeedback.push({ isBlack: true, correct: true });
       } else {
-        const isMatch = correctCell.letter.toUpperCase() === userCellLetter.toUpperCase();
+        const isMatch =
+          correctCell.letter.toUpperCase() === userCellLetter.toUpperCase();
         if (!isMatch && userCellLetter !== "") {
           hasWrong = true;
         }
@@ -221,11 +231,17 @@ const submitAttempt = async (prisma, userId, payload) => {
   });
 
   if (!attempt || attempt.userId !== userId) {
-    throw new DevBuildError("Attempt not found or access denied", StatusCodes.NOT_FOUND);
+    throw new DevBuildError(
+      "Attempt not found or access denied",
+      StatusCodes.NOT_FOUND,
+    );
   }
 
   if (attempt.completed) {
-    throw new DevBuildError("This attempt has already been successfully solved and submitted.", StatusCodes.BAD_REQUEST);
+    throw new DevBuildError(
+      "This attempt has already been successfully solved and submitted.",
+      StatusCodes.BAD_REQUEST,
+    );
   }
 
   const puzzle = await prisma.puzzle.findUnique({
@@ -245,8 +261,11 @@ const submitAttempt = async (prisma, userId, payload) => {
       if (correctCell.isBlack) continue;
 
       const userLetter =
-        filledCells && filledCells[r] && filledCells[r][c] ? filledCells[r][c] : "";
-      const isCorrect = correctCell.letter.toUpperCase() === userLetter.toUpperCase();
+        filledCells && filledCells[r] && filledCells[r][c]
+          ? filledCells[r][c]
+          : "";
+      const isCorrect =
+        correctCell.letter.toUpperCase() === userLetter.toUpperCase();
 
       if (!isCorrect) {
         isFullyCorrect = false;
@@ -259,12 +278,16 @@ const submitAttempt = async (prisma, userId, payload) => {
   if (!isFullyCorrect) {
     return {
       success: false,
-      message: "The crossword grid is incorrect or incomplete. Please check your entries.",
+      message:
+        "The crossword grid is incorrect or incomplete. Please check your entries.",
     };
   }
 
   // Compute final score dynamically
-  const score = Math.max(20, 100 - attempt.hintsUsed * 5 - attempt.wrongAttempts * 2);
+  const score = Math.max(
+    20,
+    100 - attempt.hintsUsed * 5 - attempt.wrongAttempts * 2,
+  );
 
   const updatedAttempt = await prisma.puzzleAttempt.update({
     where: { id: attemptId },
@@ -272,7 +295,8 @@ const submitAttempt = async (prisma, userId, payload) => {
       completed: true,
       completedAt: new Date(),
       durationSeconds:
-        durationSeconds || Math.floor((Date.now() - new Date(attempt.startedAt).getTime()) / 1000),
+        durationSeconds ||
+        Math.floor((Date.now() - new Date(attempt.startedAt).getTime()) / 1000),
       score,
     },
   });

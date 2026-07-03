@@ -69,4 +69,3 @@ export const uploadAvatar = createMulterUpload({
   allowedTypes: /jpeg|jpg|png|webp/,
   maxSize: 2 * 1024 * 1024,
 });
-

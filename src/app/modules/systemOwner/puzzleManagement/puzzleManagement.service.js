@@ -2,16 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import DevBuildError from "../../../lib/DevBuildError.js";
 
 const createPuzzle = async (prisma, userId, payload) => {
-  const {
-    title,
-    date,
-    difficulty,
-    status,
-    prize,
-    size,
-    grid,
-    clues,
-  } = payload;
+  const { title, date, difficulty, status, prize, size, grid, clues } = payload;
 
   const newPuzzle = await prisma.puzzle.create({
     data: {
@@ -174,21 +165,11 @@ const updatePuzzle = async (prisma, puzzleId, payload) => {
     throw new DevBuildError("Puzzle not found", StatusCodes.NOT_FOUND);
   }
 
-  const {
-    title,
-    date,
-    difficulty,
-    status,
-    prize,
-    size,
-    grid,
-    clues,
-  } = payload;
+  const { title, date, difficulty, status, prize, size, grid, clues } = payload;
 
   const updateData = {};
   if (title !== undefined) updateData.title = title;
-  if (date !== undefined)
-    updateData.publishDate = date ? new Date(date) : null;
+  if (date !== undefined) updateData.publishDate = date ? new Date(date) : null;
   if (difficulty !== undefined)
     updateData.difficulty = difficulty.toUpperCase();
   if (status !== undefined) updateData.status = status.toUpperCase();

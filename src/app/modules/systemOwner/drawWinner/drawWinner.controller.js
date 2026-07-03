@@ -19,7 +19,10 @@ const handleError = (res, error) => {
 
 const getEligibleEntries = async (req, res) => {
   try {
-    const result = await DrawWinnerService.getEligibleEntries(prisma, req.query);
+    const result = await DrawWinnerService.getEligibleEntries(
+      prisma,
+      req.query,
+    );
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Eligible entries and statistics retrieved successfully",

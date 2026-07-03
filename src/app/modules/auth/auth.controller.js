@@ -178,7 +178,8 @@ const signup = async (req, res) => {
 
     return res.status(StatusCodes.CREATED).json({
       success: true,
-      message: "User registered successfully. Please verify your email with the OTP sent.",
+      message:
+        "User registered successfully. Please verify your email with the OTP sent.",
       data: {
         user: {
           id: user.id,

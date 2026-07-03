@@ -36,7 +36,11 @@ const updatePrizeStatus = async (req, res) => {
     const { id } = req.params;
     const { prizeStatus } = req.body;
 
-    const result = await PrizeManagementService.updatePrizeStatus(prisma, id, prizeStatus);
+    const result = await PrizeManagementService.updatePrizeStatus(
+      prisma,
+      id,
+      prizeStatus,
+    );
     return res.status(StatusCodes.OK).json({
       success: true,
       message: "Prize status updated successfully",

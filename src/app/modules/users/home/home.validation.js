@@ -9,14 +9,18 @@ const startAttemptSchema = z.object({
 
 const checkAttemptSchema = z.object({
   body: z.object({
-    attemptId: z.string({ required_error: "attemptId is required" }).uuid("attemptId must be a valid UUID"),
+    attemptId: z
+      .string({ required_error: "attemptId is required" })
+      .uuid("attemptId must be a valid UUID"),
     filledCells: z.array(z.array(z.string())),
   }),
 });
 
 const submitAttemptSchema = z.object({
   body: z.object({
-    attemptId: z.string({ required_error: "attemptId is required" }).uuid("attemptId must be a valid UUID"),
+    attemptId: z
+      .string({ required_error: "attemptId is required" })
+      .uuid("attemptId must be a valid UUID"),
     filledCells: z.array(z.array(z.string())),
     durationSeconds: z.number().optional(),
   }),
