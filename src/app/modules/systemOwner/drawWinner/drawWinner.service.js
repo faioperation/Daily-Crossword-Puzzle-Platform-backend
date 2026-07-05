@@ -74,11 +74,10 @@ const getStats = async (prisma, query) => {
   const { puzzleId } = query;
   const puzzle = await getActivePuzzle(prisma, puzzleId);
 
-  // Today's Entries (all registered users who made an attempt)
+  // Today's Entries (all registered and guest users who made an attempt)
   const totalEntries = await prisma.puzzleAttempt.count({
     where: {
       puzzleId: puzzle.id,
-      userId: { not: null },
       isTester: false,
     },
   });
@@ -87,7 +86,6 @@ const getStats = async (prisma, query) => {
   const eligibleEntries = await prisma.puzzleAttempt.count({
     where: {
       puzzleId: puzzle.id,
-      userId: { not: null },
       completed: true,
       isTester: false,
       winner: null,
@@ -151,7 +149,6 @@ const getEligibleEntries = async (prisma, query) => {
 
   const where = {
     puzzleId: puzzle.id,
-    userId: { not: null },
     isTester: false,
     status: "ELIGIBLE",
   };
@@ -163,12 +160,19 @@ const getEligibleEntries = async (prisma, query) => {
   }
 
   if (search) {
-    where.user = {
-      OR: [
-        { name: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-      ],
-    };
+    where.OR = [
+      {
+        user: {
+          OR: [
+            { name: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+          ],
+        },
+      },
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+      { phone: { contains: search, mode: "insensitive" } },
+    ];
   }
 
   const [attempts, total] = await Promise.all([
@@ -210,9 +214,10 @@ const getEligibleEntries = async (prisma, query) => {
     id: item.id,
     displayId: item.displayId || `ENT-${item.id.slice(-4).toUpperCase()}`,
     participant: {
-      id: item.user.id,
-      name: item.user.name,
-      email: item.user.email,
+      id: item.user?.id || null,
+      name: item.user?.name || item.name || "N/A",
+      email: item.user?.email || item.email || "N/A",
+      phone: item.phone || null,
     },
     type: item.completed ? "Puzzle" : "Alternate",
     solveTime: item.completed ? formatDuration(item.durationSeconds) : "-",
