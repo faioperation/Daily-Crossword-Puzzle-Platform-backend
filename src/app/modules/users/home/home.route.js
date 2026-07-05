@@ -7,6 +7,7 @@ import { HomeValidation } from "./home.validation.js";
 const router = Router();
 
 router.get("/active-puzzle", checkAuthOptional, HomeController.getActivePuzzle);
+router.get("/recent-winners", HomeController.getRecentWinners);
 
 router.post(
   "/submit-attempt",
@@ -16,4 +17,3 @@ router.post(
 );
 
 export const HomeRouter = router;
-

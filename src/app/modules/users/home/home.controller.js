@@ -65,7 +65,12 @@ const submitAttempt = async (req, res) => {
       os,
     };
 
-    const result = await HomeService.submitAttempt(prisma, userId, req.body, devicePayload);
+    const result = await HomeService.submitAttempt(
+      prisma,
+      userId,
+      req.body,
+      devicePayload,
+    );
     return res.status(StatusCodes.OK).json({
       success: result.success,
       message: result.message,
@@ -76,7 +81,21 @@ const submitAttempt = async (req, res) => {
   }
 };
 
+const getRecentWinners = async (req, res) => {
+  try {
+    const result = await HomeService.getRecentWinners(prisma);
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Recent winners loaded successfully",
+      data: result,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
 export const HomeController = {
   getActivePuzzle,
   submitAttempt,
+  getRecentWinners,
 };

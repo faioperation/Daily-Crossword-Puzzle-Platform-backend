@@ -90,7 +90,8 @@ const getActivePuzzle = async (prisma, userId) => {
 
 const submitAttempt = async (prisma, userId, payload, devicePayload = {}) => {
   const { name, email, phone, date, type, durationSeconds } = payload;
-  const { deviceId, fingerprint, ipAddress, userAgent, browser, os } = devicePayload;
+  const { deviceId, fingerprint, ipAddress, userAgent, browser, os } =
+    devicePayload;
 
   // 1. Resolve today's active puzzle
   const activePuzzleData = await getActivePuzzle(prisma, null);
@@ -101,7 +102,9 @@ const submitAttempt = async (prisma, userId, payload, devicePayload = {}) => {
 
   const isCompleted = type?.toUpperCase() === "PUZZLE";
   const completedAt = new Date();
-  const startedAt = new Date(completedAt.getTime() - (durationSeconds || 0) * 1000);
+  const startedAt = new Date(
+    completedAt.getTime() - (durationSeconds || 0) * 1000,
+  );
 
   const attempt = await prisma.puzzleAttempt.create({
     data: {
@@ -139,7 +142,45 @@ const submitAttempt = async (prisma, userId, payload, devicePayload = {}) => {
   };
 };
 
+const getRecentWinners = async (prisma) => {
+  const winners = await prisma.puzzleWinner.findMany({
+    take: 3,
+    orderBy: {
+      announcedAt: "desc",
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+      puzzle: {
+        select: {
+          publishDate: true,
+          dailyPrize: true,
+        },
+      },
+    },
+  });
+
+  return winners.map((w) => {
+    const rawDate = w.announcedAt || w.createdAt;
+    const month = rawDate.getMonth() + 1;
+    const day = rawDate.getDate();
+    const year = rawDate.getFullYear();
+    const formattedDate = `${month}/${day}/${year}`;
+
+    return {
+      id: w.id,
+      date: formattedDate,
+      winnerName: w.user?.name || "N/A",
+      prize: w.reward || w.puzzle?.dailyPrize || "N/A",
+    };
+  });
+};
+
 export const HomeService = {
   getActivePuzzle,
   submitAttempt,
+  getRecentWinners,
 };
