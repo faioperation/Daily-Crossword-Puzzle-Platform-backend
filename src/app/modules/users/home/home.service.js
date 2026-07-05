@@ -52,36 +52,8 @@ const getActivePuzzle = async (prisma, userId) => {
       })
     : null;
 
-  // 3. To prevent client-side inspect-element cheating, we strip solution characters
-  // from the grid cells and clues unless the attempt is already completed.
-  const isCompleted = attempt?.completed === true;
   let responseCells = puzzle.cells;
   let responseClues = puzzle.clues;
-
-  if (!isCompleted) {
-    // Strip solution letters from the 2D cells grid
-    responseCells = puzzle.cells
-      ? puzzle.cells.map((row) =>
-          row.map((cell) => {
-            if (cell.isBlack) {
-              return { isBlack: true, letter: "", clueNum: null };
-            }
-            return { isBlack: false, clueNum: cell.clueNum, letter: "" };
-          }),
-        )
-      : [];
-
-    // Strip answers from clues array, providing only their lengths
-    responseClues = puzzle.clues
-      ? puzzle.clues.map((clue) => {
-          const { answer, ...clueDetails } = clue;
-          return {
-            ...clueDetails,
-            answerLength: answer ? answer.length : 0,
-          };
-        })
-      : [];
-  }
 
   return {
     puzzle: {
