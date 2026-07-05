@@ -24,7 +24,6 @@ const getEntries = async (prisma, query) => {
             gte: startOfToday,
             lte: endOfToday,
           },
-          userId: { not: null },
           isTester: false,
         },
       }),
@@ -32,7 +31,6 @@ const getEntries = async (prisma, query) => {
       prisma.puzzleAttempt.count({
         where: {
           completed: true,
-          userId: { not: null },
           isTester: false,
         },
       }),
@@ -40,7 +38,6 @@ const getEntries = async (prisma, query) => {
       prisma.puzzleAttempt.count({
         where: {
           completed: false,
-          userId: { not: null },
           isTester: false,
         },
       }),
@@ -48,7 +45,6 @@ const getEntries = async (prisma, query) => {
 
   // 2. Build where filter for list query
   const where = {
-    userId: { not: null },
     isTester: false,
   };
 
@@ -57,12 +53,19 @@ const getEntries = async (prisma, query) => {
   }
 
   if (search) {
-    where.user = {
-      OR: [
-        { name: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-      ],
-    };
+    where.OR = [
+      {
+        user: {
+          OR: [
+            { name: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+          ],
+        },
+      },
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+      { phone: { contains: search, mode: "insensitive" } },
+    ];
   }
 
   if (date) {
@@ -117,11 +120,11 @@ const getEntries = async (prisma, query) => {
 
   const mappedData = attempts.map((item) => ({
     id: item.id,
-    // displayId: `ENT-${item.id.slice(-4).toUpperCase()}`,
     participant: {
-      id: item.user?.id,
-      name: item.user?.name,
-      email: item.user?.email,
+      id: item.user?.id || null,
+      name: item.user?.name || item.name || "N/A",
+      email: item.user?.email || item.email || "N/A",
+      phone: item.phone || null,
     },
     type: item.completed ? "Puzzle" : "Alternate",
     date: item.createdAt.toISOString().split("T")[0],

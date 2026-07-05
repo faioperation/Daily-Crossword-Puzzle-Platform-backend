@@ -50,9 +50,9 @@ const getActivePuzzle = async (req, res) => {
   }
 };
 
-const startAttempt = async (req, res) => {
+const submitAttempt = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id || null;
     const userAgent = req.headers["user-agent"] || "";
     const { browser, os } = parseUserAgent(userAgent);
 
@@ -65,39 +65,7 @@ const startAttempt = async (req, res) => {
       os,
     };
 
-    const attempt = await HomeService.startAttempt(
-      prisma,
-      userId,
-      devicePayload,
-    );
-    return res.status(StatusCodes.CREATED).json({
-      success: true,
-      message: "Attempt started or resumed successfully",
-      data: attempt,
-    });
-  } catch (error) {
-    return handleError(res, error);
-  }
-};
-
-const checkAttempt = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const result = await HomeService.checkAttempt(prisma, userId, req.body);
-    return res.status(StatusCodes.OK).json({
-      success: true,
-      message: "Grid checked successfully",
-      data: result,
-    });
-  } catch (error) {
-    return handleError(res, error);
-  }
-};
-
-const submitAttempt = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const result = await HomeService.submitAttempt(prisma, userId, req.body);
+    const result = await HomeService.submitAttempt(prisma, userId, req.body, devicePayload);
     return res.status(StatusCodes.OK).json({
       success: result.success,
       message: result.message,
@@ -110,7 +78,5 @@ const submitAttempt = async (req, res) => {
 
 export const HomeController = {
   getActivePuzzle,
-  startAttempt,
-  checkAttempt,
   submitAttempt,
 };

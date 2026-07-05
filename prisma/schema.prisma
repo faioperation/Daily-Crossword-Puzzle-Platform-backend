@@ -213,6 +213,12 @@ model PuzzleAttempt {
   puzzleId String
   userId   String?
 
+  name     String?
+  email    String?
+  phone    String?
+  date     String?
+  type     String?
+
   // Device Information
   deviceId    String
   fingerprint String?

@@ -1,5 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import DevBuildError from "../../../lib/DevBuildError.js";
+import bcrypt from "bcrypt";
+import crypto from "crypto";
 
 const getActivePuzzle = async (prisma, puzzleId) => {
   if (puzzleId) {
@@ -232,6 +234,29 @@ const getEligibleEntries = async (prisma, query) => {
 };
 
 const drawRandomWinner = async (prisma, payload) => {
+  // Enforce one winner select per day
+  const today = new Date();
+  const startOfToday = new Date(today);
+  startOfToday.setUTCHours(0, 0, 0, 0);
+  const endOfToday = new Date(today);
+  endOfToday.setUTCHours(23, 59, 59, 999);
+
+  const existingWinnerToday = await prisma.puzzleWinner.findFirst({
+    where: {
+      createdAt: {
+        gte: startOfToday,
+        lte: endOfToday,
+      },
+    },
+  });
+
+  if (existingWinnerToday) {
+    throw new DevBuildError(
+      "A winner has already been selected today. You can only select one winner per day.",
+      StatusCodes.BAD_REQUEST,
+    );
+  }
+
   const { attemptId } = payload;
 
   const attempt = await prisma.puzzleAttempt.findUnique({
@@ -244,13 +269,6 @@ const drawRandomWinner = async (prisma, payload) => {
   }
 
   const puzzleId = attempt.puzzleId;
-
-  if (!attempt.userId) {
-    throw new DevBuildError(
-      "Cannot select an anonymous attempt as winner",
-      StatusCodes.BAD_REQUEST,
-    );
-  }
 
   if (attempt.status !== "ELIGIBLE") {
     throw new DevBuildError(
@@ -270,12 +288,48 @@ const drawRandomWinner = async (prisma, payload) => {
   const targetWinnerType = attempt.completed ? "PUZZLE" : "ALTERNATE";
 
   const winner = await prisma.$transaction(async (tx) => {
+    let winnerUserId = attempt.userId;
+
+    if (!winnerUserId) {
+      if (!attempt.email) {
+        throw new DevBuildError(
+          "Cannot select this attempt as winner because it has no email address",
+          StatusCodes.BAD_REQUEST,
+        );
+      }
+
+      let user = await tx.user.findUnique({
+        where: { email: attempt.email },
+      });
+
+      if (!user) {
+        const hashedPassword = await bcrypt.hash(crypto.randomUUID(), 12);
+        user = await tx.user.create({
+          data: {
+            name: attempt.name || "Guest Player",
+            email: attempt.email,
+            password: hashedPassword,
+            role: "USER",
+            isActive: true,
+            isVerified: true,
+          },
+        });
+      }
+
+      winnerUserId = user.id;
+
+      await tx.puzzleAttempt.update({
+        where: { id: attempt.id },
+        data: { userId: winnerUserId },
+      });
+    }
+
     // Check if the user is already a winner of this puzzle (to enforce unique constraint manually just in case)
     const alreadyWon = await tx.puzzleWinner.findUnique({
       where: {
         puzzleId_userId: {
           puzzleId,
-          userId: attempt.userId,
+          userId: winnerUserId,
         },
       },
     });
@@ -290,7 +344,7 @@ const drawRandomWinner = async (prisma, payload) => {
     const createdWinner = await tx.puzzleWinner.create({
       data: {
         puzzleId,
-        userId: attempt.userId,
+        userId: winnerUserId,
         attemptId: attempt.id,
         winnerType: targetWinnerType,
         selectionType: "RANDOM",
@@ -330,6 +384,29 @@ const drawRandomWinner = async (prisma, payload) => {
 };
 
 const drawManualWinner = async (prisma, payload) => {
+  // Enforce one winner select per day
+  const today = new Date();
+  const startOfToday = new Date(today);
+  startOfToday.setUTCHours(0, 0, 0, 0);
+  const endOfToday = new Date(today);
+  endOfToday.setUTCHours(23, 59, 59, 999);
+
+  const existingWinnerToday = await prisma.puzzleWinner.findFirst({
+    where: {
+      createdAt: {
+        gte: startOfToday,
+        lte: endOfToday,
+      },
+    },
+  });
+
+  if (existingWinnerToday) {
+    throw new DevBuildError(
+      "A winner has already been selected today. You can only select one winner per day.",
+      StatusCodes.BAD_REQUEST,
+    );
+  }
+
   const { attemptId } = payload;
 
   const attempt = await prisma.puzzleAttempt.findUnique({
@@ -342,13 +419,6 @@ const drawManualWinner = async (prisma, payload) => {
   }
 
   const puzzleId = attempt.puzzleId;
-
-  if (!attempt.userId) {
-    throw new DevBuildError(
-      "Cannot select an anonymous attempt as winner",
-      StatusCodes.BAD_REQUEST,
-    );
-  }
 
   if (attempt.status !== "ELIGIBLE") {
     throw new DevBuildError(
@@ -368,11 +438,47 @@ const drawManualWinner = async (prisma, payload) => {
   const targetWinnerType = attempt.completed ? "PUZZLE" : "ALTERNATE";
 
   const winner = await prisma.$transaction(async (tx) => {
+    let winnerUserId = attempt.userId;
+
+    if (!winnerUserId) {
+      if (!attempt.email) {
+        throw new DevBuildError(
+          "Cannot select this attempt as winner because it has no email address",
+          StatusCodes.BAD_REQUEST,
+        );
+      }
+
+      let user = await tx.user.findUnique({
+        where: { email: attempt.email },
+      });
+
+      if (!user) {
+        const hashedPassword = await bcrypt.hash(crypto.randomUUID(), 12);
+        user = await tx.user.create({
+          data: {
+            name: attempt.name || "Guest Player",
+            email: attempt.email,
+            password: hashedPassword,
+            role: "USER",
+            isActive: true,
+            isVerified: true,
+          },
+        });
+      }
+
+      winnerUserId = user.id;
+
+      await tx.puzzleAttempt.update({
+        where: { id: attempt.id },
+        data: { userId: winnerUserId },
+      });
+    }
+
     const alreadyWon = await tx.puzzleWinner.findUnique({
       where: {
         puzzleId_userId: {
           puzzleId,
-          userId: attempt.userId,
+          userId: winnerUserId,
         },
       },
     });
@@ -387,7 +493,7 @@ const drawManualWinner = async (prisma, payload) => {
     const createdWinner = await tx.puzzleWinner.create({
       data: {
         puzzleId,
-        userId: attempt.userId,
+        userId: winnerUserId,
         attemptId: attempt.id,
         winnerType: targetWinnerType,
         selectionType: "MANUAL",

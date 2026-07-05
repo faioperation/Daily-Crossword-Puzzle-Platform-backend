@@ -88,211 +88,58 @@ const getActivePuzzle = async (prisma, userId) => {
   };
 };
 
-const startAttempt = async (prisma, userId, devicePayload) => {
-  const { deviceId, fingerprint, ipAddress, userAgent, browser, os } =
-    devicePayload;
+const submitAttempt = async (prisma, userId, payload, devicePayload = {}) => {
+  const { name, email, phone, date, type, durationSeconds } = payload;
+  const { deviceId, fingerprint, ipAddress, userAgent, browser, os } = devicePayload;
 
-  // Resolve today's active puzzle
+  // 1. Resolve today's active puzzle
   const activePuzzleData = await getActivePuzzle(prisma, null);
   const puzzleId = activePuzzleData.puzzle.id;
 
-  // Check if there is already an attempt for this user
-  let attempt = await prisma.puzzleAttempt.findFirst({
-    where: {
-      puzzleId: puzzleId,
-      userId: userId,
-    },
-  });
+  const attemptId = crypto.randomUUID();
+  const displayId = `ENT-${attemptId.slice(-4).toUpperCase()}`;
 
-  if (!attempt) {
-    const attemptId = crypto.randomUUID();
-    const displayId = `ENT-${attemptId.slice(-4).toUpperCase()}`;
+  const isCompleted = type?.toUpperCase() === "PUZZLE";
+  const completedAt = new Date();
+  const startedAt = new Date(completedAt.getTime() - (durationSeconds || 0) * 1000);
 
-    attempt = await prisma.puzzleAttempt.create({
-      data: {
-        id: attemptId,
-        displayId,
-        puzzleId: puzzleId,
-        userId: userId,
-        deviceId: deviceId || "unknown",
-        fingerprint: fingerprint || null,
-        ipAddress: ipAddress || null,
-        userAgent: userAgent || null,
-        browser: browser || null,
-        os: os || null,
-        playDate: new Date(),
-        startedAt: new Date(),
-        completed: false,
-      },
-    });
-  }
-
-  return attempt;
-};
-
-const checkAttempt = async (prisma, userId, payload) => {
-  const { attemptId, filledCells } = payload;
-
-  const attempt = await prisma.puzzleAttempt.findUnique({
-    where: { id: attemptId },
-  });
-
-  if (!attempt || attempt.userId !== userId) {
-    throw new DevBuildError(
-      "Attempt not found or access denied",
-      StatusCodes.NOT_FOUND,
-    );
-  }
-
-  const puzzle = await prisma.puzzle.findUnique({
-    where: { id: attempt.puzzleId },
-  });
-
-  if (!puzzle) {
-    throw new DevBuildError("Puzzle not found", StatusCodes.NOT_FOUND);
-  }
-
-  const correctCells = puzzle.cells;
-  const feedback = [];
-  let hasWrong = false;
-
-  for (let r = 0; r < correctCells.length; r++) {
-    const rowFeedback = [];
-    for (let c = 0; c < correctCells[r].length; c++) {
-      const correctCell = correctCells[r][c];
-      const userCellLetter =
-        filledCells && filledCells[r] && filledCells[r][c]
-          ? filledCells[r][c]
-          : "";
-
-      if (correctCell.isBlack) {
-        rowFeedback.push({ isBlack: true, correct: true });
-      } else {
-        const isMatch =
-          correctCell.letter.toUpperCase() === userCellLetter.toUpperCase();
-        if (!isMatch && userCellLetter !== "") {
-          hasWrong = true;
-        }
-        rowFeedback.push({
-          isBlack: false,
-          clueNum: correctCell.clueNum,
-          correct: isMatch,
-          empty: userCellLetter === "",
-        });
-      }
-    }
-    feedback.push(rowFeedback);
-  }
-
-  // Increment wrongAttempts in database if there are incorrect filled letters
-  if (hasWrong) {
-    await prisma.puzzleAttempt.update({
-      where: { id: attemptId },
-      data: { wrongAttempts: { increment: 1 } },
-    });
-  }
-
-  return { feedback };
-};
-
-const submitAttempt = async (prisma, userId, payload) => {
-  const { attemptId, filledCells, durationSeconds } = payload;
-
-  const attempt = await prisma.puzzleAttempt.findUnique({
-    where: { id: attemptId },
-  });
-
-  if (!attempt || attempt.userId !== userId) {
-    throw new DevBuildError(
-      "Attempt not found or access denied",
-      StatusCodes.NOT_FOUND,
-    );
-  }
-
-  if (attempt.completed) {
-    throw new DevBuildError(
-      "This attempt has already been successfully solved and submitted.",
-      StatusCodes.BAD_REQUEST,
-    );
-  }
-
-  const puzzle = await prisma.puzzle.findUnique({
-    where: { id: attempt.puzzleId },
-  });
-
-  if (!puzzle) {
-    throw new DevBuildError("Puzzle not found", StatusCodes.NOT_FOUND);
-  }
-
-  const correctCells = puzzle.cells;
-  let isFullyCorrect = true;
-
-  for (let r = 0; r < correctCells.length; r++) {
-    for (let c = 0; c < correctCells[r].length; c++) {
-      const correctCell = correctCells[r][c];
-      if (correctCell.isBlack) continue;
-
-      const userLetter =
-        filledCells && filledCells[r] && filledCells[r][c]
-          ? filledCells[r][c]
-          : "";
-      const isCorrect =
-        correctCell.letter.toUpperCase() === userLetter.toUpperCase();
-
-      if (!isCorrect) {
-        isFullyCorrect = false;
-        break;
-      }
-    }
-    if (!isFullyCorrect) break;
-  }
-
-  if (!isFullyCorrect) {
-    return {
-      success: false,
-      message:
-        "The crossword grid is incorrect or incomplete. Please check your entries.",
-    };
-  }
-
-  // Compute final score dynamically
-  const score = Math.max(
-    20,
-    100 - attempt.hintsUsed * 5 - attempt.wrongAttempts * 2,
-  );
-
-  const updatedAttempt = await prisma.puzzleAttempt.update({
-    where: { id: attemptId },
+  const attempt = await prisma.puzzleAttempt.create({
     data: {
-      completed: true,
-      completedAt: new Date(),
-      durationSeconds:
-        durationSeconds ||
-        Math.floor((Date.now() - new Date(attempt.startedAt).getTime()) / 1000),
-      score,
-    },
-  });
-
-  // Save/update user answers inside the PuzzleAnswer table (1-to-1 relationship)
-  await prisma.puzzleAnswer.upsert({
-    where: { attemptId },
-    update: { answers: filledCells },
-    create: {
-      attemptId,
-      answers: filledCells,
+      id: attemptId,
+      displayId,
+      puzzleId: puzzleId,
+      userId: userId || null,
+      name: name || null,
+      email: email || null,
+      phone: phone || null,
+      date: date || null,
+      type: type || null,
+      deviceId: deviceId || "unknown",
+      fingerprint: fingerprint || null,
+      ipAddress: ipAddress || null,
+      userAgent: userAgent || null,
+      browser: browser || null,
+      os: os || null,
+      playDate: completedAt,
+      startedAt: startedAt,
+      completedAt: isCompleted ? completedAt : null,
+      durationSeconds: durationSeconds || 0,
+      completed: isCompleted,
+      score: 100, // Default perfect score since we're not checking wrong attempts server-side
+      status: "ELIGIBLE",
     },
   });
 
   return {
     success: true,
-    message: "Congratulations! You successfully solved the puzzle!",
-    attempt: updatedAttempt,
+    message: isCompleted
+      ? "Congratulations! You successfully solved the puzzle!"
+      : "Attempt recorded successfully!",
+    attempt,
   };
 };
 
 export const HomeService = {
   getActivePuzzle,
-  startAttempt,
-  checkAttempt,
   submitAttempt,
 };

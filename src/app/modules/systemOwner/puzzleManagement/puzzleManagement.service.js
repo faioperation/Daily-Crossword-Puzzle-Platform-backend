@@ -4,6 +4,41 @@ import DevBuildError from "../../../lib/DevBuildError.js";
 const createPuzzle = async (prisma, userId, payload) => {
   const { title, date, difficulty, status, prize, size, grid, clues } = payload;
 
+  const targetStatus = status?.toUpperCase();
+  const targetDateStr = date;
+
+  if (targetStatus === "PUBLISHED") {
+    if (!targetDateStr) {
+      throw new DevBuildError(
+        "Publish date is required when status is PUBLISHED",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    const targetDate = new Date(targetDateStr);
+    const startOfDay = new Date(targetDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const existingPublished = await prisma.puzzle.findFirst({
+      where: {
+        status: "PUBLISHED",
+        publishDate: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+    });
+
+    if (existingPublished) {
+      throw new DevBuildError(
+        "A puzzle is already published for this date. You can only publish one puzzle per day.",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+  }
+
   const newPuzzle = await prisma.puzzle.create({
     data: {
       title,
@@ -166,6 +201,42 @@ const updatePuzzle = async (prisma, puzzleId, payload) => {
   }
 
   const { title, date, difficulty, status, prize, size, grid, clues } = payload;
+
+  const currentStatus = status !== undefined ? status.toUpperCase() : puzzle.status;
+  const currentDateStr = date !== undefined ? date : (puzzle.publishDate ? puzzle.publishDate.toISOString() : null);
+
+  if (currentStatus === "PUBLISHED") {
+    if (!currentDateStr) {
+      throw new DevBuildError(
+        "Publish date is required when status is PUBLISHED",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+
+    const targetDate = new Date(currentDateStr);
+    const startOfDay = new Date(targetDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const existingPublished = await prisma.puzzle.findFirst({
+      where: {
+        status: "PUBLISHED",
+        publishDate: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+        id: { not: puzzleId },
+      },
+    });
+
+    if (existingPublished) {
+      throw new DevBuildError(
+        "A puzzle is already published for this date. You can only publish one puzzle per day.",
+        StatusCodes.BAD_REQUEST
+      );
+    }
+  }
 
   const updateData = {};
   if (title !== undefined) updateData.title = title;
