@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Congratulations! You're a Crossword Winner!</title>
+  <style>
+    body {
+      font-family: 'Outfit', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #1e293b;
+      margin: 0;
+      padding: 0;
+      background-color: #f8fafc;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(148, 163, 184, 0.15);
+      border: 1px solid #e2e8f0;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #e2b026 0%, #b8860b 100%);
+      padding: 40px 20px;
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .header .sub {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-top: 10px;
+      font-weight: 400;
+    }
+
+    .content {
+      padding: 40px 30px;
+      text-align: center;
+    }
+
+    .trophy {
+      font-size: 50px;
+      margin-bottom: 20px;
+      display: inline-block;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .welcome-text {
+      font-size: 20px;
+      color: #0f172a;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    .congrats-paragraph {
+      font-size: 16px;
+      color: #475569;
+      margin-bottom: 30px;
+    }
+
+    .prize-container {
+      background: #fffdf5;
+      border: 2px solid #fef08a;
+      border-radius: 12px;
+      padding: 25px;
+      margin: 30px 0;
+      box-shadow: 0 4px 6px -1px rgba(254, 240, 138, 0.2);
+    }
+
+    .prize-title {
+      font-size: 14px;
+      color: #854d0e;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      margin: 0 0 10px 0;
+    }
+
+    .prize-name {
+      font-size: 24px;
+      font-weight: 800;
+      color: #a16207;
+      margin: 0;
+    }
+
+    .action-instruction {
+      font-size: 16px;
+      color: #0f172a;
+      font-weight: 600;
+      margin-top: 30px;
+      padding: 15px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      border-left: 4px solid #e2b026;
+    }
+
+    .footer {
+      background: #f8fafc;
+      padding: 30px 20px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 13px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .divider {
+      height: 1px;
+      background: #f1f5f9;
+      margin: 30px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Congratulations!</h1>
+      <div class="sub">You Solved The Daily Crossword Puzzle</div>
+    </div>
+    <div class="content">
+      <div class="trophy">🏆</div>
+      <p class="welcome-text">Hi <%= name %>,</p>
+      <p class="congrats-paragraph">
+        We have amazing news! You have been selected as the official winner of our Daily Crossword Puzzle competition! Your quick thinking and correct answers earned you today's prize.
+      </p>
+
+      <div class="prize-container">
+        <p class="prize-title">Your Reward</p>
+        <h2 class="prize-name"><%= prize %></h2>
+      </div>
+
+      <div class="action-instruction">
+        📩 Please **reply directly to this email** with your complete shipping address (Street address, City, State/Province, ZIP/Postal Code, Country) so we can dispatch your prize to you as soon as possible.
+      </div>
+
+      <div class="divider"></div>
+      <p style="font-size: 14px; color: #64748b; margin: 0;">
+        Thank you for playing, and keep solving!
+      </p>
+    </div>
+    <div class="footer">
+      &copy; <%= new Date().getFullYear() %> Daily Crossword Platform. All rights reserved.<br>
+      If you did not participate in this crossword event, please ignore this email.
+    </div>
+  </div>
+</body>
+
+</html>

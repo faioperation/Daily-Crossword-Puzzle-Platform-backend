@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import DevBuildError from "../../../lib/DevBuildError.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { sendEmail } from "../../../utils/sendEmail.js";
 
 const getActivePuzzle = async (prisma, puzzleId) => {
   if (puzzleId) {
@@ -385,6 +386,19 @@ const drawRandomWinner = async (prisma, payload) => {
     return createdWinner;
   });
 
+  // Asynchronously send congratulations email
+  sendEmail({
+    to: winner.user.email,
+    subject: "Congratulations! You won the Daily Crossword Puzzle!",
+    templateName: "winnerNotification",
+    templateData: {
+      name: winner.user.name || "Winner",
+      prize: winner.reward || "Daily Prize",
+    },
+  }).catch((err) => {
+    console.error("Failed to send winner email notification:", err);
+  });
+
   return winner;
 };
 
@@ -532,6 +546,19 @@ const drawManualWinner = async (prisma, payload) => {
     });
 
     return createdWinner;
+  });
+
+  // Asynchronously send congratulations email
+  sendEmail({
+    to: winner.user.email,
+    subject: "Congratulations! You won the Daily Crossword Puzzle!",
+    templateName: "winnerNotification",
+    templateData: {
+      name: winner.user.name || "Winner",
+      prize: winner.reward || "Daily Prize",
+    },
+  }).catch((err) => {
+    console.error("Failed to send winner email notification:", err);
   });
 
   return winner;

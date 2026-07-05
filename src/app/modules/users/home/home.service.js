@@ -88,12 +88,68 @@ const getActivePuzzle = async (prisma, userId) => {
   };
 };
 
+const getESTDayBoundaries = () => {
+  const now = new Date();
+
+  // Format to YYYY-MM-DD in America/New_York timezone
+  const nyDateStr = now.toLocaleDateString("en-CA", {
+    timeZone: "America/New_York",
+  });
+
+  // Get timezone string with long offset
+  const tzString = now.toLocaleString("en-US", {
+    timeZone: "America/New_York",
+    timeZoneName: "longOffset",
+  });
+
+  const match = tzString.match(/GMT([+-]\d+)(:?\d+)?/);
+  let offsetStr = "-05:00"; // fallback
+  if (match) {
+    const sign = match[1].charAt(0);
+    const hours = match[1].replace(/[+-]/, "").padStart(2, "0");
+    const minutes = (match[2] || ":00").replace(":", "").padStart(2, "0");
+    offsetStr = `${sign}${hours}:${minutes}`;
+  }
+
+  const start = new Date(`${nyDateStr}T00:00:00${offsetStr}`);
+  const end = new Date(`${nyDateStr}T23:59:59.999${offsetStr}`);
+
+  return { start, end };
+};
+
 const submitAttempt = async (prisma, userId, payload, devicePayload = {}) => {
   const { name, email, phone, date, type, durationSeconds } = payload;
   const { deviceId, fingerprint, ipAddress, userAgent, browser, os } =
     devicePayload;
 
-  // 1. Resolve today's active puzzle
+  // 1. Enforce one submission per email per calendar day (USA Eastern Time)
+  const { start: estStart, end: estEnd } = getESTDayBoundaries();
+
+  const existingAttempt = await prisma.puzzleAttempt.findFirst({
+    where: {
+      playDate: {
+        gte: estStart,
+        lte: estEnd,
+      },
+      OR: [
+        { email: { equals: email, mode: "insensitive" } },
+        {
+          user: {
+            email: { equals: email, mode: "insensitive" },
+          },
+        },
+      ],
+    },
+  });
+
+  if (existingAttempt) {
+    throw new DevBuildError(
+      "You have already submitted a crossword entry with this email address today. Please try again tomorrow.",
+      StatusCodes.BAD_REQUEST,
+    );
+  }
+
+  // 2. Resolve today's active puzzle
   const activePuzzleData = await getActivePuzzle(prisma, null);
   const puzzleId = activePuzzleData.puzzle.id;
 
