@@ -28,6 +28,7 @@ const getSettings = async (req, res) => {
         systemOwner: {
           name: req.user.name,
           email: req.user.email,
+          avatar: req.user.avatar,
         },
       },
     });
