@@ -64,3 +64,28 @@ export const checkAuthMiddleware =
       });
     }
   };
+
+export const checkAuthOptional = async (req, res, next) => {
+  console.log("🔥 Optional Auth middleware hit:", req.originalUrl);
+
+  try {
+    let token = req.headers.authorization;
+
+    if (token) {
+      const jwtToken = token.replace(/^Bearer\s*/i, "");
+      const decoded = jwt.verify(jwtToken, envVars.JWT_SECRET_TOKEN);
+
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+      });
+
+      if (user && user.isActive && user.isVerified) {
+        req.user = user;
+      }
+    }
+  } catch (error) {
+    console.log("Optional auth token verification failed:", error.message);
+  }
+  next();
+};
+
