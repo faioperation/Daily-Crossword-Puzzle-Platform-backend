@@ -1,5 +1,5 @@
 import ejs from "ejs";
-import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 import path from "path";
 import { fileURLToPath } from "url";
 import { envVars } from "../config/env.js";
@@ -9,22 +9,8 @@ import DevBuildError from "../lib/DevBuildError.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-//         MAIL TRANSPORTER
-
-// secure: true  → port 465 (SSL)
-// secure: false → port 587 (STARTTLS) ← Gmail
-const isSSLPort = Number(envVars.EMAIL_SENDER.SMTP_PORT) === 465;
-
-const transporter = nodemailer.createTransport({
-  host: envVars.EMAIL_SENDER.SMTP_HOST,
-  port: Number(envVars.EMAIL_SENDER.SMTP_PORT),
-  secure: isSSLPort,
-  requireTLS: !isSSLPort, // force STARTTLS upgrade on port 587
-  auth: {
-    user: envVars.EMAIL_SENDER.SMTP_USER,
-    pass: envVars.EMAIL_SENDER.SMTP_PASS,
-  },
-});
+// Configure SendGrid
+sgMail.setApiKey(envVars.SENDGRID.API_KEY);
 
 // SEND EMAIL
 
@@ -44,21 +30,33 @@ export const sendEmail = async ({
 
     const html = await ejs.renderFile(templatePath, templateData);
 
-    const info = await transporter.sendMail({
-      from: envVars.EMAIL_SENDER.SMTP_FROM,
+    const msg = {
       to,
+      from: envVars.SENDGRID.FROM,
       subject,
       html,
-      attachments: attachments.map((file) => ({
-        filename: file.filename,
-        content: file.content,
-        contentType: file.contentType,
-      })),
-    });
+      attachments: attachments.map((file) => {
+        let base64Content = "";
+        if (Buffer.isBuffer(file.content)) {
+          base64Content = file.content.toString("base64");
+        } else if (typeof file.content === "string") {
+          // Check if already base64 encoded, otherwise encode it
+          const isBase64 = /^[A-Za-z0-9+/]*={0,2}$/.test(file.content) && file.content.length % 4 === 0;
+          base64Content = isBase64 ? file.content : Buffer.from(file.content).toString("base64");
+        }
+        return {
+          filename: file.filename,
+          content: base64Content,
+          type: file.contentType,
+          disposition: "attachment",
+        };
+      }),
+    };
 
-    console.log(`📧 Email sent to ${to} | ID: ${info.messageId}`);
+    const response = await sgMail.send(msg);
+    console.log(`📧 Email sent to ${to} via SendGrid | Status: ${response[0].statusCode}`);
   } catch (error) {
-    console.error("❌ Email sending failed:", error?.message || error);
+    console.error("❌ SendGrid Email sending failed:", error?.response?.body || error?.message || error);
     if (envVars.NODE_ENV === "production") {
       throw new DevBuildError("Failed to send email", 500);
     }

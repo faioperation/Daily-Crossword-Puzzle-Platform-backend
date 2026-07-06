@@ -37,13 +37,10 @@ const loadEnvVars = () => {
 
     // Redis
     REDIS_URL: process.env.REDIS_URL,
-    // node mailer (SMTP)
-    EMAIL_SENDER: {
-      SMTP_HOST: process.env.SMTP_HOST,
-      SMTP_PORT: process.env.SMTP_PORT,
-      SMTP_USER: process.env.SMTP_USER,
-      SMTP_PASS: process.env.SMTP_PASS,
-      SMTP_FROM: process.env.SMTP_FROM,
+    // SendGrid config
+    SENDGRID: {
+      API_KEY: process.env.SENDGRID_API_KEY,
+      FROM: process.env.SENDGRID_FROM,
     },
     // Frontend
     FRONT_END_URL: process.env.FRONT_END_URL,
