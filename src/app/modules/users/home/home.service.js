@@ -60,6 +60,7 @@ const getActivePuzzle = async (prisma, userId) => {
       id: puzzle.id,
       title: puzzle.title,
       description: puzzle.description,
+      image: puzzle.image,
       rows: puzzle.rows,
       columns: puzzle.columns,
       rules: puzzle.rules,

@@ -2,7 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import DevBuildError from "../../../lib/DevBuildError.js";
 
 const createPuzzle = async (prisma, userId, payload) => {
-  const { title, date, difficulty, status, prize, size, grid, clues } = payload;
+  const { title, description, image, date, difficulty, status, prize, size, grid, clues } = payload;
 
   const targetStatus = status?.toUpperCase();
   const targetDateStr = date;
@@ -42,6 +42,8 @@ const createPuzzle = async (prisma, userId, payload) => {
   const newPuzzle = await prisma.puzzle.create({
     data: {
       title,
+      description,
+      image,
       publishDate: date ? new Date(date) : null,
       difficulty: difficulty.toUpperCase(),
       status: status.toUpperCase(),
@@ -200,7 +202,7 @@ const updatePuzzle = async (prisma, puzzleId, payload) => {
     throw new DevBuildError("Puzzle not found", StatusCodes.NOT_FOUND);
   }
 
-  const { title, date, difficulty, status, prize, size, grid, clues } = payload;
+  const { title, description, image, date, difficulty, status, prize, size, grid, clues } = payload;
 
   const currentStatus = status !== undefined ? status.toUpperCase() : puzzle.status;
   const currentDateStr = date !== undefined ? date : (puzzle.publishDate ? puzzle.publishDate.toISOString() : null);
@@ -240,6 +242,8 @@ const updatePuzzle = async (prisma, puzzleId, payload) => {
 
   const updateData = {};
   if (title !== undefined) updateData.title = title;
+  if (description !== undefined) updateData.description = description;
+  if (image !== undefined) updateData.image = image;
   if (date !== undefined) updateData.publishDate = date ? new Date(date) : null;
   if (difficulty !== undefined)
     updateData.difficulty = difficulty.toUpperCase();

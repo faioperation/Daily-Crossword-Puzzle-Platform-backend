@@ -69,3 +69,9 @@ export const uploadAvatar = createMulterUpload({
   allowedTypes: /jpeg|jpg|png|webp/,
   maxSize: 2 * 1024 * 1024,
 });
+
+export const uploadPuzzleImage = createMulterUpload({
+  folder: "puzzles",
+  allowedTypes: /jpeg|jpg|png|webp|gif/,
+  maxSize: 5 * 1024 * 1024,
+});

@@ -20,6 +20,8 @@ const handleError = (res, error) => {
 const mapPuzzleResponse = (puzzle) => ({
   id: puzzle.id,
   title: puzzle.title,
+  description: puzzle.description,
+  image: puzzle.image,
   date: puzzle.publishDate
     ? puzzle.publishDate.toISOString().split("T")[0]
     : null,
@@ -40,10 +42,14 @@ const mapPuzzleResponse = (puzzle) => ({
 const createPuzzle = async (req, res) => {
   try {
     const userId = req.user.id;
+    const payload = { ...req.body };
+    if (req.file) {
+      payload.image = `/uploads/puzzles/${req.file.filename}`;
+    }
     const result = await PuzzleManagementService.createPuzzle(
       prisma,
       userId,
-      req.body,
+      payload,
     );
 
     return res.status(StatusCodes.CREATED).json({
@@ -92,10 +98,14 @@ const getPuzzleById = async (req, res) => {
 
 const updatePuzzle = async (req, res) => {
   try {
+    const payload = { ...req.body };
+    if (req.file) {
+      payload.image = `/uploads/puzzles/${req.file.filename}`;
+    }
     const result = await PuzzleManagementService.updatePuzzle(
       prisma,
       req.params.id,
-      req.body,
+      payload,
     );
     return res.status(StatusCodes.OK).json({
       success: true,

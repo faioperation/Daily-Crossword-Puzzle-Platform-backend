@@ -19,6 +19,8 @@ const createPuzzleSchema = z.object({
     title: z
       .string({ required_error: "title is required" })
       .min(1, "title cannot be empty"),
+    description: z.string().optional().nullable(),
+    image: z.string().optional().nullable(),
     date: z.string().optional().nullable(),
     difficulty: z.enum(
       [
@@ -67,6 +69,8 @@ const createPuzzleSchema = z.object({
 const updatePuzzleSchema = z.object({
   body: z.object({
     title: z.string().min(1, "title cannot be empty").optional(),
+    description: z.string().optional().nullable(),
+    image: z.string().optional().nullable(),
     date: z.string().optional().nullable(),
     difficulty: z
       .enum([

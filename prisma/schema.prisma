@@ -107,6 +107,7 @@ model Puzzle {
 
   title       String
   description String?
+  image       String?
 
   rows    Int
   columns Int
