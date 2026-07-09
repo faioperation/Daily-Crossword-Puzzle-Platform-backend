@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import DevBuildError from "../../../lib/DevBuildError.js";
 import crypto from "crypto";
+import { sendEmail } from "../../../utils/sendEmail.js";
 
 const getActivePuzzle = async (prisma, userId) => {
   // 1. Find today's puzzle (publishDate matches today's date in UTC boundaries)
@@ -189,6 +190,30 @@ const submitAttempt = async (prisma, userId, payload, devicePayload = {}) => {
       status: "ELIGIBLE",
     },
   });
+
+  if (isCompleted && email) {
+    const minutes = Math.floor((durationSeconds || 0) / 60);
+    const seconds = (durationSeconds || 0) % 60;
+    const solveTimeStr =
+      minutes > 0
+        ? `${minutes} minute${minutes > 1 ? "s" : ""} ${seconds} second${seconds !== 1 ? "s" : ""}`
+        : `${seconds} second${seconds !== 1 ? "s" : ""}`;
+
+    sendEmail({
+      to: email,
+      subject: "Well Done! You Completed Today's Crossword",
+      templateName: "puzzleCompletion",
+      templateData: {
+        name: name || "Player",
+        puzzleTitle: activePuzzleData.puzzle.title,
+        solveTime: solveTimeStr,
+        prize: activePuzzleData.puzzle.dailyPrize || "N/A",
+      },
+      senderType: "giveaway",
+    }).catch((err) => {
+      console.error("Failed to send puzzle completion email:", err);
+    });
+  }
 
   return {
     success: true,

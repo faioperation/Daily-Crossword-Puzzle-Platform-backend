@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Well Done! Puzzle Completed Successfully</title>
+    <style>
+      body {
+        font-family:
+          "Outfit", "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #1e293b;
+        margin: 0;
+        padding: 0;
+        background-color: #f8fafc;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(148, 163, 184, 0.15);
+        border: 1px solid #e2e8f0;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        padding: 40px 20px;
+        text-align: center;
+        color: #000000;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
+      .header .sub {
+        font-size: 16px;
+        margin-top: 10px;
+        font-weight: 500;
+        color: #000000;
+      }
+
+      .content {
+        padding: 40px 30px;
+        text-align: center;
+      }
+
+      .success-icon {
+        font-size: 50px;
+        margin-bottom: 20px;
+        display: inline-block;
+      }
+
+      .welcome-text {
+        font-size: 20px;
+        color: #0f172a;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      .success-paragraph {
+        font-size: 16px;
+        color: #475569;
+        margin-bottom: 30px;
+      }
+
+      .info-container {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 30px 0;
+        text-align: left;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px dashed #e2e8f0;
+      }
+
+      .info-row:last-child {
+        border-bottom: none;
+      }
+
+      .info-label {
+        font-weight: 600;
+        color: #475569;
+      }
+
+      .info-value {
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .attention-box {
+        font-size: 15px;
+        color: #0f172a;
+        font-weight: 600;
+        margin-top: 30px;
+        padding: 15px;
+        background: #fffdf5;
+        border-radius: 8px;
+        border-left: 4px solid #e2b026;
+        text-align: left;
+      }
+
+      .footer {
+        background: #f8fafc;
+        padding: 30px 20px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 13px;
+        border-top: 1px solid #f1f5f9;
+      }
+
+      .divider {
+        height: 1px;
+        background: #f1f5f9;
+        margin: 30px 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Congratulations!</h1>
+        <div class="sub">You Completed Today's Crossword</div>
+      </div>
+      <div class="content">
+        <div class="success-icon">🎉</div>
+        <p class="welcome-text">Hi <%= name %>,</p>
+        <p class="success-paragraph">
+          Congratulations! You have successfully solved and submitted your entry
+          for today's crossword puzzle. Here are your submission details:
+        </p>
+
+        <div class="info-container">
+          <div class="info-row">
+            <span class="info-label">Puzzle:</span>
+            <span class="info-value"><%= puzzleTitle %></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Solve Time:</span>
+            <span class="info-value"><%= solveTime %></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Today's Prize:</span>
+            <span class="info-value"><%= prize %></span>
+          </div>
+        </div>
+
+        <div class="attention-box">
+          💡 <strong>What's Next?</strong><br />
+          Keep an eye on your email inbox! If you are chosen as the daily
+          winner, we will send you a congratulations email with instructions on
+          how to claim your prize.
+        </div>
+
+        <div class="divider"></div>
+        <p style="font-size: 14px; color: #64748b; margin: 0">
+          Thank you for playing, and good luck!
+        </p>
+      </div>
+      <div class="footer">
+        &copy; <%= new Date().getFullYear() %> Daily Crossword Platform. All
+        rights reserved.<br />
+        If you did not submit a crossword entry, please ignore this email.
+      </div>
+    </div>
+  </body>
+</html>
