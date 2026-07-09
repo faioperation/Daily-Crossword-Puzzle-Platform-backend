@@ -3,6 +3,19 @@ import DevBuildError from "../../../lib/DevBuildError.js";
 import crypto from "crypto";
 import { sendEmail } from "../../../utils/sendEmail.js";
 
+const getESTDateString = (date = new Date()) => {
+  return date.toLocaleDateString("en-CA", {
+    timeZone: "America/New_York",
+  });
+};
+
+const getESTDateDiffInDays = (dateStr1, dateStr2) => {
+  const d1 = new Date(dateStr1);
+  const d2 = new Date(dateStr2);
+  const diffTime = Math.abs(d2 - d1);
+  return Math.round(diffTime / (1000 * 60 * 60 * 24));
+};
+
 const getActivePuzzle = async (prisma, userId) => {
   // 1. Find today's puzzle (publishDate matches today's date in UTC boundaries)
   const today = new Date();
@@ -56,6 +69,41 @@ const getActivePuzzle = async (prisma, userId) => {
   let responseCells = puzzle.cells;
   let responseClues = puzzle.clues;
 
+  let currentStreak = 0;
+  let longestStreak = 0;
+
+  if (userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        currentStreak: true,
+        longestStreak: true,
+        lastSolvedDate: true,
+      },
+    });
+
+    if (user) {
+      currentStreak = user.currentStreak;
+      longestStreak = user.longestStreak;
+
+      if (user.lastSolvedDate) {
+        const todayStr = getESTDateString(new Date());
+        const lastSolvedStr = getESTDateString(user.lastSolvedDate);
+        const diff = getESTDateDiffInDays(todayStr, lastSolvedStr);
+
+        // If the user didn't solve a puzzle yesterday or today, their streak is broken
+        if (diff > 1) {
+          currentStreak = 0;
+          await prisma.user.update({
+            where: { id: userId },
+            data: { currentStreak: 0 },
+          });
+        }
+      }
+    }
+  }
+
   return {
     puzzle: {
       id: puzzle.id,
@@ -85,6 +133,12 @@ const getActivePuzzle = async (prisma, userId) => {
           status: attempt.status,
           hasWon: !!attempt.winner,
           answers: attempt.answers ? attempt.answers.answers : null,
+        }
+      : null,
+    streak: userId
+      ? {
+          currentStreak,
+          longestStreak,
         }
       : null,
   };
@@ -190,6 +244,61 @@ const submitAttempt = async (prisma, userId, payload, devicePayload = {}) => {
       status: "ELIGIBLE",
     },
   });
+
+  // Update user streak if logged in and puzzle is successfully completed
+  if (userId && isCompleted) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          currentStreak: true,
+          longestStreak: true,
+          lastSolvedDate: true,
+        },
+      });
+
+      if (user) {
+        const todayStr = getESTDateString(new Date());
+        let nextStreak = user.currentStreak;
+        let nextLongest = user.longestStreak;
+        let shouldUpdateUser = false;
+
+        if (!user.lastSolvedDate) {
+          nextStreak = 1;
+          shouldUpdateUser = true;
+        } else {
+          const lastSolvedStr = getESTDateString(user.lastSolvedDate);
+          const diff = getESTDateDiffInDays(todayStr, lastSolvedStr);
+
+          if (diff === 1) {
+            nextStreak += 1;
+            shouldUpdateUser = true;
+          } else if (diff > 1) {
+            nextStreak = 1;
+            shouldUpdateUser = true;
+          }
+        }
+
+        if (shouldUpdateUser) {
+          if (nextStreak > nextLongest) {
+            nextLongest = nextStreak;
+          }
+
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              currentStreak: nextStreak,
+              longestStreak: nextLongest,
+              lastSolvedDate: new Date(),
+            },
+          });
+        }
+      }
+    } catch (streakError) {
+      console.error("Failed to update user streak:", streakError);
+    }
+  }
 
   if (isCompleted && email) {
     const minutes = Math.floor((durationSeconds || 0) / 60);
