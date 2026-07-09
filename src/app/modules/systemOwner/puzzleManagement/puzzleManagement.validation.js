@@ -57,12 +57,42 @@ const createPuzzleSchema = z.object({
     prize: z
       .string({ required_error: "prize is required" })
       .min(1, "prize cannot be empty"),
-    size: z
+
+    // Fixed: Coerce string to number
+    size: z.coerce
       .number({ required_error: "size is required" })
       .int()
       .positive("size must be a positive integer"),
-    grid: z.array(z.array(cellSchema)).min(1, "grid cannot be empty"),
-    clues: z.array(clueSchema).min(1, "clues array cannot be empty"),
+
+    // Fixed: Preprocess string to JSON array safely
+    grid: z.preprocess(
+      (val) => {
+        if (typeof val === "string") {
+          try {
+            return JSON.parse(val);
+          } catch {
+            return val; // if it fails to parse, let Zod return the array error natively
+          }
+        }
+        return val;
+      },
+      z.array(z.array(cellSchema)).min(1, "grid cannot be empty"),
+    ),
+
+    // Fixed: Preprocess string to JSON array safely
+    clues: z.preprocess(
+      (val) => {
+        if (typeof val === "string") {
+          try {
+            return JSON.parse(val);
+          } catch {
+            return val; // if it fails to parse, let Zod return the array error natively
+          }
+        }
+        return val;
+      },
+      z.array(clueSchema).min(1, "clues array cannot be empty"),
+    ),
   }),
 });
 
