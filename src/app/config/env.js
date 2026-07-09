@@ -41,6 +41,11 @@ const loadEnvVars = () => {
     SENDGRID: {
       API_KEY: process.env.SENDGRID_API_KEY,
       FROM: process.env.SENDGRID_FROM,
+      FROM_NAME: process.env.SENDGRID_FROM_NAME || "Heritage Stackers",
+      REPLY_TO: process.env.SENDGRID_REPLY_TO || process.env.SENDGRID_FROM,
+      GIVEAWAY_FROM: process.env.SENDGRID_GIVEAWAY_FROM || process.env.SENDGRID_FROM,
+      GIVEAWAY_FROM_NAME: process.env.SENDGRID_GIVEAWAY_FROM_NAME || process.env.SENDGRID_FROM_NAME || "Heritage Stackers Giveaway",
+      GIVEAWAY_REPLY_TO: process.env.SENDGRID_GIVEAWAY_REPLY_TO || process.env.SENDGRID_GIVEAWAY_FROM || process.env.SENDGRID_FROM,
     },
     // Frontend
     FRONT_END_URL: process.env.FRONT_END_URL,

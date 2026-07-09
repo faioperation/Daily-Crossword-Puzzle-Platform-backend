@@ -20,6 +20,8 @@ export const sendEmail = async ({
   templateName,
   templateData = {},
   attachments = [],
+  replyTo,
+  senderType = "default",
 }) => {
   try {
     const templatePath = path.join(
@@ -30,9 +32,18 @@ export const sendEmail = async ({
 
     const html = await ejs.renderFile(templatePath, templateData);
 
+    const isGiveaway = senderType === "giveaway";
+    const fromEmail = isGiveaway ? envVars.SENDGRID.GIVEAWAY_FROM : envVars.SENDGRID.FROM;
+    const fromName = isGiveaway ? envVars.SENDGRID.GIVEAWAY_FROM_NAME : envVars.SENDGRID.FROM_NAME;
+    const defaultReplyTo = isGiveaway ? envVars.SENDGRID.GIVEAWAY_REPLY_TO : envVars.SENDGRID.REPLY_TO;
+
     const msg = {
       to,
-      from: envVars.SENDGRID.FROM,
+      from: {
+        email: fromEmail,
+        name: fromName,
+      },
+      replyTo: replyTo || defaultReplyTo,
       subject,
       html,
       attachments: attachments.map((file) => {

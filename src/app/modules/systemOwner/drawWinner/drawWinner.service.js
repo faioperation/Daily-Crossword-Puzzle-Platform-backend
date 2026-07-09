@@ -395,6 +395,7 @@ const drawRandomWinner = async (prisma, payload) => {
       name: winner.user.name || "Winner",
       prize: winner.reward || "Daily Prize",
     },
+    senderType: "giveaway",
   }).catch((err) => {
     console.error("Failed to send winner email notification:", err);
   });
@@ -557,6 +558,7 @@ const drawManualWinner = async (prisma, payload) => {
       name: winner.user.name || "Winner",
       prize: winner.reward || "Daily Prize",
     },
+    senderType: "giveaway",
   }).catch((err) => {
     console.error("Failed to send winner email notification:", err);
   });

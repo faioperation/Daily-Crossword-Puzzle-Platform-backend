@@ -1,5 +1,5 @@
 {
-  "name": "project_template_with_postgresql_prisma",
+  "name": "Daily-Crossword-Puzzle-Platform",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
