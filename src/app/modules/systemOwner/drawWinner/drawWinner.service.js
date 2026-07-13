@@ -3,6 +3,7 @@ import DevBuildError from "../../../lib/DevBuildError.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { sendEmail } from "../../../utils/sendEmail.js";
+import { getESTDayBoundaries } from "../../../utils/date.js";
 
 const getActivePuzzle = async (prisma, puzzleId) => {
   if (puzzleId) {
@@ -74,11 +75,15 @@ const formatLastDrawDate = (date) => {
 const getStats = async (prisma, query) => {
   const { puzzleId } = query;
   const puzzle = await getActivePuzzle(prisma, puzzleId);
+  const { start: startOfToday, end: endOfToday } = getESTDayBoundaries();
 
   // Today's Entries (all registered and guest users who made an attempt)
   const totalEntries = await prisma.puzzleAttempt.count({
     where: {
-      puzzleId: puzzle.id,
+      createdAt: {
+        gte: startOfToday,
+        lte: endOfToday,
+      },
       isTester: false,
     },
   });
@@ -148,11 +153,35 @@ const getEligibleEntries = async (prisma, query) => {
   // Fetch dashboard statistics for the puzzle
   const statsData = await getStats(prisma, query);
 
+  const { start: startOfToday, end: endOfToday } = getESTDayBoundaries();
+
   const where = {
-    puzzleId: puzzle.id,
     isTester: false,
     status: "ELIGIBLE",
+    AND: [],
   };
+
+  if (puzzleId) {
+    where.puzzleId = puzzleId;
+  } else {
+    // If no specific puzzleId is requested, show running date entries (EST)
+    // AND previous days' entries where draw is pending
+    where.AND.push({
+      OR: [
+        {
+          createdAt: {
+            gte: startOfToday,
+            lte: endOfToday,
+          },
+        },
+        {
+          puzzle: {
+            winnerSelected: false,
+          },
+        },
+      ],
+    });
+  }
 
   if (type === "PUZZLE") {
     where.completed = true;
@@ -161,19 +190,25 @@ const getEligibleEntries = async (prisma, query) => {
   }
 
   if (search) {
-    where.OR = [
-      {
-        user: {
-          OR: [
-            { name: { contains: search, mode: "insensitive" } },
-            { email: { contains: search, mode: "insensitive" } },
-          ],
+    where.AND.push({
+      OR: [
+        {
+          user: {
+            OR: [
+              { name: { contains: search, mode: "insensitive" } },
+              { email: { contains: search, mode: "insensitive" } },
+            ],
+          },
         },
-      },
-      { name: { contains: search, mode: "insensitive" } },
-      { email: { contains: search, mode: "insensitive" } },
-      { phone: { contains: search, mode: "insensitive" } },
-    ];
+        { name: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+        { phone: { contains: search, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  if (where.AND.length === 0) {
+    delete where.AND;
   }
 
   const [attempts, total] = await Promise.all([
