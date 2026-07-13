@@ -1,8 +1,20 @@
 import { StatusCodes } from "http-status-codes";
 import DevBuildError from "../../../lib/DevBuildError.js";
+import { getESTDayBoundaries } from "../../../utils/date.js";
 
 const createPuzzle = async (prisma, userId, payload) => {
-  const { title, description, image, date, difficulty, status, prize, size, grid, clues } = payload;
+  const {
+    title,
+    description,
+    image,
+    date,
+    difficulty,
+    status,
+    prize,
+    size,
+    grid,
+    clues,
+  } = payload;
 
   const targetStatus = status?.toUpperCase();
   const targetDateStr = date;
@@ -11,7 +23,7 @@ const createPuzzle = async (prisma, userId, payload) => {
     if (!targetDateStr) {
       throw new DevBuildError(
         "Publish date is required when status is PUBLISHED",
-        StatusCodes.BAD_REQUEST
+        StatusCodes.BAD_REQUEST,
       );
     }
 
@@ -34,7 +46,7 @@ const createPuzzle = async (prisma, userId, payload) => {
     if (existingPublished) {
       throw new DevBuildError(
         "A puzzle is already published for this date. You can only publish one puzzle per day.",
-        StatusCodes.BAD_REQUEST
+        StatusCodes.BAD_REQUEST,
       );
     }
   }
@@ -75,9 +87,18 @@ const getAllPuzzles = async (prisma, query) => {
   const parsedLimit = Number(limit) || 10;
   const skip = (parsedPage - 1) * parsedLimit;
 
+  const { start: startOfToday, end: endOfToday } = getESTDayBoundaries();
+
   // 1. Calculate dashboard statistics (global across all puzzles)
   const [totalPuzzlesCount, publishedCount, draftCount] = await Promise.all([
-    prisma.puzzle.count(),
+    prisma.puzzle.count({
+      where: {
+        createdAt: {
+          gte: startOfToday,
+          lte: endOfToday,
+        },
+      },
+    }),
     prisma.puzzle.count({ where: { status: "PUBLISHED" } }),
     prisma.puzzle.count({ where: { status: "DRAFT" } }),
   ]);
@@ -202,16 +223,33 @@ const updatePuzzle = async (prisma, puzzleId, payload) => {
     throw new DevBuildError("Puzzle not found", StatusCodes.NOT_FOUND);
   }
 
-  const { title, description, image, date, difficulty, status, prize, size, grid, clues } = payload;
+  const {
+    title,
+    description,
+    image,
+    date,
+    difficulty,
+    status,
+    prize,
+    size,
+    grid,
+    clues,
+  } = payload;
 
-  const currentStatus = status !== undefined ? status.toUpperCase() : puzzle.status;
-  const currentDateStr = date !== undefined ? date : (puzzle.publishDate ? puzzle.publishDate.toISOString() : null);
+  const currentStatus =
+    status !== undefined ? status.toUpperCase() : puzzle.status;
+  const currentDateStr =
+    date !== undefined
+      ? date
+      : puzzle.publishDate
+        ? puzzle.publishDate.toISOString()
+        : null;
 
   if (currentStatus === "PUBLISHED") {
     if (!currentDateStr) {
       throw new DevBuildError(
         "Publish date is required when status is PUBLISHED",
-        StatusCodes.BAD_REQUEST
+        StatusCodes.BAD_REQUEST,
       );
     }
 
@@ -235,7 +273,7 @@ const updatePuzzle = async (prisma, puzzleId, payload) => {
     if (existingPublished) {
       throw new DevBuildError(
         "A puzzle is already published for this date. You can only publish one puzzle per day.",
-        StatusCodes.BAD_REQUEST
+        StatusCodes.BAD_REQUEST,
       );
     }
   }
