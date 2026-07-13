@@ -1,5 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import DevBuildError from "../../../lib/DevBuildError.js";
+import { getESTDayBoundaries } from "../../../utils/date.js";
 
 const getEntries = async (prisma, query) => {
   const { search, date, status, page = 1, limit = 10 } = query;
@@ -9,11 +10,7 @@ const getEntries = async (prisma, query) => {
   const skip = (parsedPage - 1) * parsedLimit;
 
   // 1. Calculate dashboard statistics (global across all attempts)
-  const today = new Date();
-  const startOfToday = new Date(today);
-  startOfToday.setUTCHours(0, 0, 0, 0);
-  const endOfToday = new Date(today);
-  endOfToday.setUTCHours(23, 59, 59, 999);
+  const { start: startOfToday, end: endOfToday } = getESTDayBoundaries();
 
   const [todayEntriesCount, puzzleEntriesCount, alternateEntriesCount] =
     await Promise.all([
