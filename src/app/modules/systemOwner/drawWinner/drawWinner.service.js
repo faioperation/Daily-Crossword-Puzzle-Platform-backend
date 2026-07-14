@@ -131,10 +131,13 @@ const getStats = async (prisma, query) => {
       },
     });
 
-    // Get the most recently drawn winner overall
+    // Get winner drawn today in EST
     winnerRecord = await prisma.puzzleWinner.findFirst({
-      orderBy: {
-        announcedAt: "desc",
+      where: {
+        announcedAt: {
+          gte: startOfToday,
+          lte: endOfToday,
+        },
       },
       include: {
         user: {
@@ -275,6 +278,7 @@ const getEligibleEntries = async (prisma, query) => {
     },
     type: item.completed ? "Puzzle" : "Alternate",
     solveTime: item.completed ? formatDuration(item.durationSeconds) : "-",
+    date: getESTDateString(item.createdAt),
   }));
 
   const meta = {
