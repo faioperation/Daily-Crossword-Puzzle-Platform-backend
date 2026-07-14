@@ -82,72 +82,74 @@ const getStats = async (prisma, query) => {
     },
   });
 
-  let eligibleEntries = 0;
-  let winnerRecord = null;
-
-  if (puzzleId) {
-    const puzzle = await prisma.puzzle.findUnique({
-      where: { id: puzzleId },
-    });
-    if (puzzle) {
-      eligibleEntries = puzzle.winnerSelected
-        ? 0
-        : await prisma.puzzleAttempt.count({
-            where: {
-              puzzleId: puzzle.id,
-              completed: true,
-              isTester: false,
-              winner: null,
-              status: "ELIGIBLE",
-            },
-          });
-
-      winnerRecord = await prisma.puzzleWinner.findFirst({
-        where: {
-          puzzleId: puzzle.id,
-          winnerType: "PUZZLE",
+  // Check if a winner has already been drawn today in EST
+  const winnerToday = await prisma.puzzleWinner.findFirst({
+    where: {
+      announcedAt: {
+        gte: startOfToday,
+        lte: endOfToday,
+      },
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+          email: true,
         },
-        include: {
-          user: {
-            select: {
-              name: true,
-              email: true,
+      },
+    },
+  });
+
+  let eligibleEntries = 0;
+  let winnerRecord = winnerToday;
+
+  if (!winnerToday) {
+    if (puzzleId) {
+      const puzzle = await prisma.puzzle.findUnique({
+        where: { id: puzzleId },
+      });
+      if (puzzle) {
+        eligibleEntries = puzzle.winnerSelected
+          ? 0
+          : await prisma.puzzleAttempt.count({
+              where: {
+                puzzleId: puzzle.id,
+                completed: true,
+                isTester: false,
+                winner: null,
+                status: "ELIGIBLE",
+              },
+            });
+
+        winnerRecord = await prisma.puzzleWinner.findFirst({
+          where: {
+            puzzleId: puzzle.id,
+            winnerType: "PUZZLE",
+          },
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
             },
+          },
+        });
+      }
+    } else {
+      // Count all eligible attempts across all published puzzles that are pending draw
+      eligibleEntries = await prisma.puzzleAttempt.count({
+        where: {
+          completed: true,
+          isTester: false,
+          status: "ELIGIBLE",
+          puzzle: {
+            status: "PUBLISHED",
+            winnerSelected: false,
           },
         },
       });
     }
-  } else {
-    // Count all eligible attempts across all published puzzles that are pending draw
-    eligibleEntries = await prisma.puzzleAttempt.count({
-      where: {
-        completed: true,
-        isTester: false,
-        status: "ELIGIBLE",
-        puzzle: {
-          status: "PUBLISHED",
-          winnerSelected: false,
-        },
-      },
-    });
-
-    // Get winner drawn today in EST
-    winnerRecord = await prisma.puzzleWinner.findFirst({
-      where: {
-        announcedAt: {
-          gte: startOfToday,
-          lte: endOfToday,
-        },
-      },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
   }
 
   // Last Draw Date across all puzzles
@@ -187,6 +189,31 @@ const getEligibleEntries = async (prisma, query) => {
 
   // Fetch dashboard statistics for the puzzle
   const statsData = await getStats(prisma, query);
+
+  // If a winner has already been drawn today in EST, no more draws can be done, so 0 eligible entries
+  const { start: startOfToday, end: endOfToday } = getESTDayBoundaries();
+  const winnerToday = await prisma.puzzleWinner.findFirst({
+    where: {
+      announcedAt: {
+        gte: startOfToday,
+        lte: endOfToday,
+      },
+    },
+  });
+
+  if (winnerToday) {
+    return {
+      meta: {
+        page: parsedPage,
+        limit: parsedLimit,
+        total: 0,
+        totalPage: 0,
+      },
+      data: [],
+      stats: statsData.stats,
+      winnerDetails: statsData.winnerDetails,
+    };
+  }
 
   const where = {
     isTester: false,
