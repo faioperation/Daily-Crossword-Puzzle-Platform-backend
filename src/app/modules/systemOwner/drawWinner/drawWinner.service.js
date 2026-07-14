@@ -69,7 +69,6 @@ const formatLastDrawDate = (date) => {
 
 const getStats = async (prisma, query) => {
   const { puzzleId } = query;
-  const puzzle = await getActivePuzzle(prisma, puzzleId);
   const { start: startOfToday, end: endOfToday } = getESTDayBoundaries();
 
   // Today's Entries (all registered and guest users who made an attempt)
@@ -83,31 +82,70 @@ const getStats = async (prisma, query) => {
     },
   });
 
-  // Eligible Entries (completed attempts that haven't won yet)
-  const eligibleEntries = await prisma.puzzleAttempt.count({
-    where: {
-      puzzleId: puzzle.id,
-      completed: true,
-      isTester: false,
-      winner: null,
-    },
-  });
+  let eligibleEntries = 0;
+  let winnerRecord = null;
 
-  // Current Winner (primary PUZZLE winner of this puzzle)
-  const winnerRecord = await prisma.puzzleWinner.findFirst({
-    where: {
-      puzzleId: puzzle.id,
-      winnerType: "PUZZLE",
-    },
-    include: {
-      user: {
-        select: {
-          name: true,
-          email: true,
+  if (puzzleId) {
+    const puzzle = await prisma.puzzle.findUnique({
+      where: { id: puzzleId },
+    });
+    if (puzzle) {
+      eligibleEntries = puzzle.winnerSelected
+        ? 0
+        : await prisma.puzzleAttempt.count({
+            where: {
+              puzzleId: puzzle.id,
+              completed: true,
+              isTester: false,
+              winner: null,
+              status: "ELIGIBLE",
+            },
+          });
+
+      winnerRecord = await prisma.puzzleWinner.findFirst({
+        where: {
+          puzzleId: puzzle.id,
+          winnerType: "PUZZLE",
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+    }
+  } else {
+    // Count all eligible attempts across all published puzzles that are pending draw
+    eligibleEntries = await prisma.puzzleAttempt.count({
+      where: {
+        completed: true,
+        isTester: false,
+        status: "ELIGIBLE",
+        puzzle: {
+          status: "PUBLISHED",
+          winnerSelected: false,
         },
       },
-    },
-  });
+    });
+
+    // Get the most recently drawn winner overall
+    winnerRecord = await prisma.puzzleWinner.findFirst({
+      orderBy: {
+        announcedAt: "desc",
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+  }
 
   // Last Draw Date across all puzzles
   const lastWinner = await prisma.puzzleWinner.findFirst({
@@ -139,7 +177,6 @@ const getStats = async (prisma, query) => {
 
 const getEligibleEntries = async (prisma, query) => {
   const { puzzleId, type, search, page = 1, limit = 10 } = query;
-  const puzzle = await getActivePuzzle(prisma, puzzleId);
 
   const parsedPage = Number(page) || 1;
   const parsedLimit = Number(limit) || 10;
@@ -147,8 +184,6 @@ const getEligibleEntries = async (prisma, query) => {
 
   // Fetch dashboard statistics for the puzzle
   const statsData = await getStats(prisma, query);
-
-  const { start: startOfToday, end: endOfToday } = getESTDayBoundaries();
 
   const where = {
     isTester: false,
@@ -159,23 +194,11 @@ const getEligibleEntries = async (prisma, query) => {
   if (puzzleId) {
     where.puzzleId = puzzleId;
   } else {
-    // If no specific puzzleId is requested, show running date entries (EST)
-    // AND previous days' entries where draw is pending
-    where.AND.push({
-      OR: [
-        {
-          createdAt: {
-            gte: startOfToday,
-            lte: endOfToday,
-          },
-        },
-        {
-          puzzle: {
-            winnerSelected: false,
-          },
-        },
-      ],
-    });
+    // Show attempts for all published puzzles where draw is pending
+    where.puzzle = {
+      status: "PUBLISHED",
+      winnerSelected: false,
+    };
   }
 
   if (type === "PUZZLE") {
