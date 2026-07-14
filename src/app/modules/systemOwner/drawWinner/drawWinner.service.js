@@ -82,13 +82,10 @@ const getStats = async (prisma, query) => {
     },
   });
 
-  // Check if a winner has already been drawn today in EST
-  const winnerToday = await prisma.puzzleWinner.findFirst({
-    where: {
-      announcedAt: {
-        gte: startOfToday,
-        lte: endOfToday,
-      },
+  // Get the most recently drawn winner overall
+  const lastWinner = await prisma.puzzleWinner.findFirst({
+    orderBy: {
+      announcedAt: "desc",
     },
     include: {
       user: {
@@ -100,8 +97,24 @@ const getStats = async (prisma, query) => {
     },
   });
 
+  let eligibleAfterDate = null;
+  let winnerRecord = null;
+
+  if (lastWinner) {
+    const { end: endOfLastDrawDay } = getESTDayBoundaries(lastWinner.announcedAt);
+    eligibleAfterDate = endOfLastDrawDay;
+
+    // Check if the last winner was drawn today (in EST boundaries)
+    const isWinnerToday = lastWinner.announcedAt >= startOfToday && lastWinner.announcedAt <= endOfToday;
+    if (isWinnerToday) {
+      winnerRecord = lastWinner;
+    }
+  }
+
   let eligibleEntries = 0;
-  let winnerRecord = winnerToday;
+
+  // If a winner has already been drawn today, eligibility is 0 system-wide
+  const winnerToday = lastWinner && lastWinner.announcedAt >= startOfToday && lastWinner.announcedAt <= endOfToday;
 
   if (!winnerToday) {
     if (puzzleId) {
@@ -137,27 +150,22 @@ const getStats = async (prisma, query) => {
         });
       }
     } else {
-      // Count all eligible attempts across all published puzzles that are pending draw
+      // Count all eligible attempts created after the last draw date
+      const eligibleWhere = {
+        completed: true,
+        isTester: false,
+        status: "ELIGIBLE",
+      };
+      if (eligibleAfterDate) {
+        eligibleWhere.createdAt = {
+          gt: eligibleAfterDate,
+        };
+      }
       eligibleEntries = await prisma.puzzleAttempt.count({
-        where: {
-          completed: true,
-          isTester: false,
-          status: "ELIGIBLE",
-          puzzle: {
-            status: "PUBLISHED",
-            winnerSelected: false,
-          },
-        },
+        where: eligibleWhere,
       });
     }
   }
-
-  // Last Draw Date across all puzzles
-  const lastWinner = await prisma.puzzleWinner.findFirst({
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
 
   return {
     stats: {
@@ -190,16 +198,17 @@ const getEligibleEntries = async (prisma, query) => {
   // Fetch dashboard statistics for the puzzle
   const statsData = await getStats(prisma, query);
 
-  // If a winner has already been drawn today in EST, no more draws can be done, so 0 eligible entries
   const { start: startOfToday, end: endOfToday } = getESTDayBoundaries();
-  const winnerToday = await prisma.puzzleWinner.findFirst({
-    where: {
-      announcedAt: {
-        gte: startOfToday,
-        lte: endOfToday,
-      },
+
+  // Get the most recently drawn winner overall to calculate boundary
+  const lastWinner = await prisma.puzzleWinner.findFirst({
+    orderBy: {
+      announcedAt: "desc",
     },
   });
+
+  // If a winner has already been drawn today in EST, return empty list
+  const winnerToday = lastWinner && lastWinner.announcedAt >= startOfToday && lastWinner.announcedAt <= endOfToday;
 
   if (winnerToday) {
     return {
@@ -215,6 +224,12 @@ const getEligibleEntries = async (prisma, query) => {
     };
   }
 
+  let eligibleAfterDate = null;
+  if (lastWinner) {
+    const { end: endOfLastDrawDay } = getESTDayBoundaries(lastWinner.announcedAt);
+    eligibleAfterDate = endOfLastDrawDay;
+  }
+
   const where = {
     isTester: false,
     status: "ELIGIBLE",
@@ -224,11 +239,12 @@ const getEligibleEntries = async (prisma, query) => {
   if (puzzleId) {
     where.puzzleId = puzzleId;
   } else {
-    // Show attempts for all published puzzles where draw is pending
-    where.puzzle = {
-      status: "PUBLISHED",
-      winnerSelected: false,
-    };
+    // Filter attempts by date, ignoring puzzleId
+    if (eligibleAfterDate) {
+      where.createdAt = {
+        gt: eligibleAfterDate,
+      };
+    }
   }
 
   if (type === "PUZZLE") {
