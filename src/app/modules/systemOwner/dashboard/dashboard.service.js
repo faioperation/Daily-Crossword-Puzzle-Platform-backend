@@ -1,19 +1,15 @@
+import { getESTDayBoundaries, getESTDayName } from "../../../utils/date.js";
+
 const getDashboardStats = async (prisma) => {
   const today = new Date();
 
-  // Today boundaries
-  const startOfToday = new Date(today);
-  startOfToday.setUTCHours(0, 0, 0, 0);
-  const endOfToday = new Date(today);
-  endOfToday.setUTCHours(23, 59, 59, 999);
+  // Today boundaries in EST
+  const { start: startOfToday, end: endOfToday } = getESTDayBoundaries(today);
 
-  // Yesterday boundaries
+  // Yesterday boundaries in EST
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
-  const startOfYesterday = new Date(yesterday);
-  startOfYesterday.setUTCHours(0, 0, 0, 0);
-  const endOfYesterday = new Date(yesterday);
-  endOfYesterday.setUTCHours(23, 59, 59, 999);
+  const { start: startOfYesterday, end: endOfYesterday } = getESTDayBoundaries(yesterday);
 
   // 1. Fetch chronological ordered puzzles to determine PZ-XYZ sequence
   const allPuzzlesOrdered = await prisma.puzzle.findMany({
@@ -101,12 +97,9 @@ const getDashboardStats = async (prisma) => {
   for (let i = 6; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
-    const start = new Date(d);
-    start.setUTCHours(0, 0, 0, 0);
-    const end = new Date(d);
-    end.setUTCHours(23, 59, 59, 999);
+    const { start, end } = getESTDayBoundaries(d);
 
-    const dayName = dayNames[d.getUTCDay()];
+    const dayName = getESTDayName(d);
 
     const attempts = await prisma.puzzleAttempt.findMany({
       where: {

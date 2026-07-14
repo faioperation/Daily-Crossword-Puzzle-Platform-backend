@@ -5,12 +5,8 @@ import { sendEmail } from "../../../utils/sendEmail.js";
 import { getESTDateString, getESTDateDiffInDays, getESTDayBoundaries } from "../../../utils/date.js";
 
 const getActivePuzzle = async (prisma, userId) => {
-  // 1. Find today's puzzle (publishDate matches today's date in UTC boundaries)
-  const today = new Date();
-  const startOfDay = new Date(today);
-  startOfDay.setUTCHours(0, 0, 0, 0);
-  const endOfDay = new Date(today);
-  endOfDay.setUTCHours(23, 59, 59, 999);
+  // 1. Find today's puzzle (publishDate matches today's date in EST boundaries)
+  const { start: startOfDay, end: endOfDay } = getESTDayBoundaries();
 
   let puzzle = await prisma.puzzle.findFirst({
     where: {

@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import DevBuildError from "../../../lib/DevBuildError.js";
 import { QueryBuilder } from "../../../utils/QueryBuilder.js";
+import { getESTDayBoundaries, getESTDateString } from "../../../utils/date.js";
 
 const getAllPrizes = async (prisma, query) => {
   const queryParams = { ...query };
@@ -13,12 +14,9 @@ const getAllPrizes = async (prisma, query) => {
     .sort("-announcedAt")
     .paginate();
 
-  // If a date filter is passed, filter announcedAt/createdAt for that day
+  // If a date filter is passed, filter announcedAt/createdAt for that day in EST
   if (dateVal) {
-    const startOfDay = new Date(dateVal);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    const endOfDay = new Date(dateVal);
-    endOfDay.setUTCHours(23, 59, 59, 999);
+    const { start: startOfDay, end: endOfDay } = getESTDayBoundaries(dateVal);
 
     queryBuilder.where.announcedAt = {
       gte: startOfDay,
@@ -54,8 +52,8 @@ const getAllPrizes = async (prisma, query) => {
     winnerEmail: item.user.email,
     prize: item.reward,
     dateWon: item.announcedAt
-      ? item.announcedAt.toISOString().split("T")[0]
-      : item.createdAt.toISOString().split("T")[0],
+      ? getESTDateString(item.announcedAt)
+      : getESTDateString(item.createdAt),
     currentStatus: item.prizeStatus || "EMAIL_SENT",
   }));
 
@@ -100,8 +98,8 @@ const updatePrizeStatus = async (prisma, id, prizeStatus) => {
     winnerEmail: updated.user.email,
     prize: updated.reward,
     dateWon: updated.announcedAt
-      ? updated.announcedAt.toISOString().split("T")[0]
-      : updated.createdAt.toISOString().split("T")[0],
+      ? getESTDateString(updated.announcedAt)
+      : getESTDateString(updated.createdAt),
     currentStatus: updated.prizeStatus,
   };
 };

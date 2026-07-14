@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import DevBuildError from "../../../lib/DevBuildError.js";
-import { getESTDayBoundaries } from "../../../utils/date.js";
+import { getESTDayBoundaries, getESTStartOfDay } from "../../../utils/date.js";
 
 const createPuzzle = async (prisma, userId, payload) => {
   const {
@@ -27,11 +27,7 @@ const createPuzzle = async (prisma, userId, payload) => {
       );
     }
 
-    const targetDate = new Date(targetDateStr);
-    const startOfDay = new Date(targetDate);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    const endOfDay = new Date(targetDate);
-    endOfDay.setUTCHours(23, 59, 59, 999);
+    const { start: startOfDay, end: endOfDay } = getESTDayBoundaries(targetDateStr);
 
     const existingPublished = await prisma.puzzle.findFirst({
       where: {
@@ -56,7 +52,7 @@ const createPuzzle = async (prisma, userId, payload) => {
       title,
       description,
       image,
-      publishDate: date ? new Date(date) : null,
+      publishDate: date ? getESTStartOfDay(date) : null,
       difficulty: difficulty.toUpperCase(),
       status: status.toUpperCase(),
       dailyPrize: prize,
@@ -120,11 +116,7 @@ const getAllPuzzles = async (prisma, query) => {
 
   const targetDateStr = date || publishDate;
   if (targetDateStr) {
-    const targetDate = new Date(targetDateStr);
-    const startOfDay = new Date(targetDate);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    const endOfDay = new Date(targetDate);
-    endOfDay.setUTCHours(23, 59, 59, 999);
+    const { start: startOfDay, end: endOfDay } = getESTDayBoundaries(targetDateStr);
 
     where.publishDate = {
       gte: startOfDay,
@@ -253,11 +245,7 @@ const updatePuzzle = async (prisma, puzzleId, payload) => {
       );
     }
 
-    const targetDate = new Date(currentDateStr);
-    const startOfDay = new Date(targetDate);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    const endOfDay = new Date(targetDate);
-    endOfDay.setUTCHours(23, 59, 59, 999);
+    const { start: startOfDay, end: endOfDay } = getESTDayBoundaries(currentDateStr);
 
     const existingPublished = await prisma.puzzle.findFirst({
       where: {
@@ -282,7 +270,7 @@ const updatePuzzle = async (prisma, puzzleId, payload) => {
   if (title !== undefined) updateData.title = title;
   if (description !== undefined) updateData.description = description;
   if (image !== undefined) updateData.image = image;
-  if (date !== undefined) updateData.publishDate = date ? new Date(date) : null;
+  if (date !== undefined) updateData.publishDate = date ? getESTStartOfDay(date) : null;
   if (difficulty !== undefined)
     updateData.difficulty = difficulty.toUpperCase();
   if (status !== undefined) updateData.status = status.toUpperCase();

@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import DevBuildError from "../../../lib/DevBuildError.js";
-import { getESTDayBoundaries } from "../../../utils/date.js";
+import { getESTDayBoundaries, getESTDateString } from "../../../utils/date.js";
 
 const getEntries = async (prisma, query) => {
   const { search, date, status, page = 1, limit = 10 } = query;
@@ -66,11 +66,7 @@ const getEntries = async (prisma, query) => {
   }
 
   if (date) {
-    const targetDate = new Date(date);
-    const startOfTargetDay = new Date(targetDate);
-    startOfTargetDay.setUTCHours(0, 0, 0, 0);
-    const endOfTargetDay = new Date(targetDate);
-    endOfTargetDay.setUTCHours(23, 59, 59, 999);
+    const { start: startOfTargetDay, end: endOfTargetDay } = getESTDayBoundaries(date);
 
     where.createdAt = {
       gte: startOfTargetDay,
@@ -124,7 +120,7 @@ const getEntries = async (prisma, query) => {
       phone: item.phone || null,
     },
     type: item.completed ? "Puzzle" : "Alternate",
-    date: item.createdAt.toISOString().split("T")[0],
+    date: getESTDateString(item.createdAt),
     solveTime: item.completed ? formatDuration(item.durationSeconds) : "-",
     status: item.status,
   }));

@@ -3,7 +3,7 @@ import DevBuildError from "../../../lib/DevBuildError.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { sendEmail } from "../../../utils/sendEmail.js";
-import { getESTDayBoundaries } from "../../../utils/date.js";
+import { getESTDayBoundaries, getESTDateString, getESTDateDiffInDays } from "../../../utils/date.js";
 
 const getActivePuzzle = async (prisma, puzzleId) => {
   if (puzzleId) {
@@ -16,12 +16,8 @@ const getActivePuzzle = async (prisma, puzzleId) => {
     return puzzle;
   }
 
-  // Find today's puzzle (publishDate matches today's date)
-  const today = new Date();
-  const startOfDay = new Date(today);
-  startOfDay.setUTCHours(0, 0, 0, 0);
-  const endOfDay = new Date(today);
-  endOfDay.setUTCHours(23, 59, 59, 999);
+  // Find today's puzzle (publishDate matches today's date in EST boundaries)
+  const { start: startOfDay, end: endOfDay } = getESTDayBoundaries();
 
   let puzzle = await prisma.puzzle.findFirst({
     where: {
@@ -60,16 +56,15 @@ const getActivePuzzle = async (prisma, puzzleId) => {
 
 const formatLastDrawDate = (date) => {
   if (!date) return "Never";
-  const today = new Date();
-  const drawDate = new Date(date);
+  const todayStr = getESTDateString(new Date());
+  const drawDateStr = getESTDateString(new Date(date));
 
-  const diffTime = today.setHours(0, 0, 0, 0) - drawDate.setHours(0, 0, 0, 0);
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = getESTDateDiffInDays(todayStr, drawDateStr);
 
   if (diffDays === 0) return "Today";
   if (diffDays === 1) return "Yesterday";
   if (diffDays > 1 && diffDays <= 7) return `${diffDays} days ago`;
-  return drawDate.toISOString().split("T")[0];
+  return drawDateStr;
 };
 
 const getStats = async (prisma, query) => {
@@ -275,12 +270,8 @@ const getEligibleEntries = async (prisma, query) => {
 };
 
 const drawRandomWinner = async (prisma, payload) => {
-  // Enforce one winner select per day
-  const today = new Date();
-  const startOfToday = new Date(today);
-  startOfToday.setUTCHours(0, 0, 0, 0);
-  const endOfToday = new Date(today);
-  endOfToday.setUTCHours(23, 59, 59, 999);
+  // Enforce one winner select per day in EST boundaries
+  const { start: startOfToday, end: endOfToday } = getESTDayBoundaries();
 
   const existingWinnerToday = await prisma.puzzleWinner.findFirst({
     where: {
@@ -439,12 +430,8 @@ const drawRandomWinner = async (prisma, payload) => {
 };
 
 const drawManualWinner = async (prisma, payload) => {
-  // Enforce one winner select per day
-  const today = new Date();
-  const startOfToday = new Date(today);
-  startOfToday.setUTCHours(0, 0, 0, 0);
-  const endOfToday = new Date(today);
-  endOfToday.setUTCHours(23, 59, 59, 999);
+  // Enforce one winner select per day in EST boundaries
+  const { start: startOfToday, end: endOfToday } = getESTDayBoundaries();
 
   const existingWinnerToday = await prisma.puzzleWinner.findFirst({
     where: {

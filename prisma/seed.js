@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { fileURLToPath } from "url";
+import { getESTStartOfDay } from "../src/app/utils/date.js";
 
 const prisma = new PrismaClient();
 
@@ -93,15 +94,14 @@ export async function seedDatabase(prismaClient) {
     console.log("⚙️ Settings seeded successfully!");
   }
 
-  // 4. Seed Puzzles (Yesterday, Today, Tomorrow/Draft)
-  const today = new Date();
-  today.setUTCHours(12, 0, 0, 0);
+  // 4. Seed Puzzles (Yesterday, Today, Tomorrow/Draft) in EST Start of Day
+  const today = getESTStartOfDay(new Date());
 
   const yesterday = new Date(today);
-  yesterday.setUTCDate(today.getUTCDate() - 1);
+  yesterday.setDate(today.getDate() - 1);
 
   const tomorrow = new Date(today);
-  tomorrow.setUTCDate(today.getUTCDate() + 1);
+  tomorrow.setDate(today.getDate() + 1);
 
   const grid4x4 = [
     [

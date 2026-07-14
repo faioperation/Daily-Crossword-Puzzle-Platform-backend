@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import DevBuildError from "../../../lib/DevBuildError.js";
 import { QueryBuilder } from "../../../utils/QueryBuilder.js";
+import { getESTDayBoundaries, getESTDateString } from "../../../utils/date.js";
 
 // Utility to format values like PUZZLE -> Puzzle, RANDOM -> Random
 const formatEnumString = (str) => {
@@ -19,12 +20,9 @@ const getWinnerHistory = async (prisma, query) => {
     .sort("-announcedAt")
     .paginate();
 
-  // Handle date won filtering
+  // Handle date won filtering in EST day boundaries
   if (dateVal) {
-    const startOfDay = new Date(dateVal);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    const endOfDay = new Date(dateVal);
-    endOfDay.setUTCHours(23, 59, 59, 999);
+    const { start: startOfDay, end: endOfDay } = getESTDayBoundaries(dateVal);
 
     queryBuilder.where.announcedAt = {
       gte: startOfDay,
@@ -58,8 +56,8 @@ const getWinnerHistory = async (prisma, query) => {
     winnerEmail: item.user.email,
     type: formatEnumString(item.winnerType),
     winnerDate: item.announcedAt
-      ? item.announcedAt.toISOString().split("T")[0]
-      : item.createdAt.toISOString().split("T")[0],
+      ? getESTDateString(item.announcedAt)
+      : getESTDateString(item.createdAt),
     selection: formatEnumString(item.selectionType),
     status: formatEnumString(item.status),
     reward: item.reward || "N/A",
@@ -92,8 +90,8 @@ const getWinnerById = async (prisma, id) => {
   }
 
   const submissionDate = item.attempt.completedAt
-    ? item.attempt.completedAt.toISOString().split("T")[0]
-    : item.attempt.createdAt.toISOString().split("T")[0];
+    ? getESTDateString(item.attempt.completedAt)
+    : getESTDateString(item.attempt.createdAt);
 
   return {
     id: item.id,
@@ -105,8 +103,8 @@ const getWinnerById = async (prisma, id) => {
     selection: formatEnumString(item.selectionType),
     submissionDate,
     winnerDate: item.announcedAt
-      ? item.announcedAt.toISOString().split("T")[0]
-      : item.createdAt.toISOString().split("T")[0],
+      ? getESTDateString(item.announcedAt)
+      : getESTDateString(item.createdAt),
     status: formatEnumString(item.status),
   };
 };
